@@ -1,0 +1,5 @@
+export const rutaBase = '/'
+export const rutaInicioCliente = '/inicio'
+export const rutaIniciarSesion = '#/log-in'
+export const rutaUsuarios = '/usuarios/'
+export const rutaContrato = '/terminos-condiciones'

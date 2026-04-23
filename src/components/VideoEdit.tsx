@@ -1,0 +1,141 @@
+import * as React from 'react';
+import { useNavigate, useParams } from 'react-router';
+import { useDispatch, useSelector } from 'react-redux';
+import useNotifications from '../hooks/useNotifications/useNotifications';
+import { extractErrorMessage } from '../utils/errorUtils';
+import { AccionesVideo } from '../store/actions/video';
+import {
+  videoActualSelector,
+  obtenerVideoEnProgresoSelector,
+  productosParaVideosSelector,
+} from '../store/selectors/video';
+import VideoForm, { type FormFieldValue, type VideoFormState } from './VideoForm';
+import PageContainer from './PageContainer';
+import type { UpdateVideoRequest } from '../models/VideoReel';
+import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
+
+const validateVideo = (values: Partial<UpdateVideoRequest & { productId: number }>) => {
+  const errors: Partial<Record<string, string>> = {};
+  if (!values.thumbnailUrl || values.thumbnailUrl.trim() === '') {
+    errors.thumbnailUrl = 'La URL de la miniatura es requerida';
+  }
+  if (!values.username || (values.username as string).trim() === '') {
+    errors.username = 'El nombre de usuario es requerido';
+  }
+  if (!values.productId) {
+    errors.productId = 'Debes seleccionar un producto';
+  }
+  return { errors, isValid: Object.keys(errors).length === 0 };
+};
+
+export default function VideoEdit() {
+  const { videoId } = useParams();
+  const navigate = useNavigate();
+  const dispatch = useDispatch<any>();
+  const notifications = useNotifications();
+
+  const video = useSelector(videoActualSelector);
+  const isLoadingVideo = useSelector(obtenerVideoEnProgresoSelector);
+  const products = useSelector(productosParaVideosSelector) || [];
+
+  React.useEffect(() => {
+    if (videoId) {
+      dispatch(AccionesVideo.obtenerVideoPorId(Number(videoId)));
+    }
+    dispatch(AccionesVideo.obtenerProductosParaVideos());
+    return () => {
+      dispatch(AccionesVideo.limpiarVideoActual());
+    };
+  }, [dispatch, videoId]);
+
+  const [formState, setFormState] = React.useState<VideoFormState>({
+    values: {},
+    errors: {},
+  });
+
+  React.useEffect(() => {
+    if (video) {
+      setFormState({
+        values: {
+          videoUrl: video.videoUrl,
+          thumbnailUrl: video.thumbnailUrl,
+          username: video.username,
+          productId: video.productId,
+        },
+        errors: {},
+      });
+    }
+  }, [video]);
+
+  const handleFormFieldChange = React.useCallback(
+    (name: keyof VideoFormState['values'], value: FormFieldValue) => {
+      setFormState((prev) => {
+        const newValues = { ...prev.values, [name]: value };
+        const { errors } = validateVideo(newValues);
+        return {
+          values: newValues,
+          errors: { ...prev.errors, [name]: errors[name as string] },
+        };
+      });
+    },
+    [],
+  );
+
+  const handleFormReset = React.useCallback(() => {
+    navigate('/videos');
+  }, [navigate]);
+
+  const handleFormSubmit = React.useCallback(async () => {
+    const { errors, isValid } = validateVideo(formState.values);
+    if (!isValid) {
+      setFormState((prev) => ({ ...prev, errors }));
+      return;
+    }
+
+    try {
+      await dispatch(
+        AccionesVideo.actualizarVideo(Number(videoId), formState.values as UpdateVideoRequest),
+      );
+      notifications.show('Video actualizado exitosamente.', {
+        severity: 'success',
+        autoHideDuration: 3000,
+      });
+      navigate('/videos');
+    } catch (updateError) {
+      notifications.show(
+        extractErrorMessage(updateError),
+        { severity: 'error', autoHideDuration: 3000 },
+      );
+    }
+  }, [formState.values, videoId, navigate, notifications, dispatch]);
+
+  if (isLoadingVideo || !video) {
+    return (
+      <PageContainer
+        title="Editar Video"
+        breadcrumbs={[{ title: 'Videos', path: '/videos' }, { title: 'Editar' }]}
+      >
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+          <CircularProgress />
+        </Box>
+      </PageContainer>
+    );
+  }
+
+  return (
+    <PageContainer
+      title="Editar Video"
+      breadcrumbs={[{ title: 'Videos', path: '/videos' }, { title: 'Editar' }]}
+    >
+      <VideoForm
+        formState={formState}
+        onFieldChange={handleFormFieldChange}
+        onSubmit={handleFormSubmit}
+        onReset={handleFormReset}
+        submitButtonLabel="Actualizar"
+        products={products}
+      />
+    </PageContainer>
+  );
+}
