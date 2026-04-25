@@ -17,6 +17,7 @@ export interface SignUpData {
     password: string;
     phoneNumber: string;
     profileImage?: string;
+    isSuperuser?: boolean;
     account: {
         pointsPerPurchase: number;
         isActive: boolean;

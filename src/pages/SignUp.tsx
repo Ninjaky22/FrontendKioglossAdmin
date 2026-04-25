@@ -15,7 +15,6 @@ import MuiCard from '@mui/material/Card';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import { styled } from '@mui/material/styles';
-import AppTheme from '../theme/AppTheme';
 import ColorModeSelect from '../theme/ColorModeSelect';
 import SitemarkIcon from '../components/SitemarkIcon';
 import { Link as RouterLink, useNavigate } from 'react-router';
@@ -70,7 +69,7 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
   },
 }));
 
-export default function SignUp(props: { disableCustomTheme?: boolean }) {
+export default function SignUp() {
   const dispatch = useDispatch<any>();
   const navigate = useNavigate();
 
@@ -157,6 +156,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
       password: data.get('password') as string,
       phoneNumber: data.get('phone') as string,
       profileImage: "",
+      isSuperuser: true,
       account: {
         pointsPerPurchase: 0,
         isActive: true
