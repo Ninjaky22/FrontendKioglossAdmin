@@ -31,6 +31,7 @@ import OrderList from './components/OrderList';
 import OrderShow from './components/OrderShow';
 import UserList from './components/UserList';
 import UserShow from './components/UserShow';
+import ReportsPage from './pages/ReportsPage';
 
 
 
@@ -115,6 +116,10 @@ const router = createHashRouter([
       {
         path: '/orders/:orderId',
         element: <OrderShow />,
+      },
+      {
+        path: '/reports',
+        element: <ReportsPage />,
       },
       {
         path: '/users',
