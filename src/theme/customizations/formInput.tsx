@@ -8,6 +8,20 @@ import { brand } from '../themePrimitives';
 
 /* eslint-disable import/prefer-default-export */
 export const formInputCustomizations: Components<Theme> = {
+  MuiFormLabel: {
+    styleOverrides: {
+      root: ({ theme }) => ({
+        fontSize: 12,
+        fontWeight: 700,
+        textTransform: 'uppercase',
+        letterSpacing: '0.12em',
+        color: brand[700],
+        ...theme.applyStyles('dark', {
+          color: brand[100],
+        }),
+      }),
+    },
+  },
   MuiFormControl: {
     styleOverrides: {
       root: ({ theme }) => ({

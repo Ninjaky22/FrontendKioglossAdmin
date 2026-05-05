@@ -62,12 +62,15 @@ export const surfacesCustomizations: Components<Theme> = {
           padding: 16,
           gap: 16,
           transition: 'all 100ms ease',
-          backgroundColor: gray[50],
+          backgroundColor: 'rgba(255, 255, 255, 0.85)',
           borderRadius: (theme.vars || theme).shape.borderRadius,
-          border: `1px solid ${(theme.vars || theme).palette.divider}`,
-          boxShadow: 'none',
+          border: '1px solid rgba(255, 255, 255, 0.7)',
+          boxShadow: '0 28px 70px rgba(97, 3, 97, 0.22)',
+          backdropFilter: 'blur(12px)',
           ...theme.applyStyles('dark', {
-            backgroundColor: gray[800],
+            backgroundColor: alpha(gray[900], 0.6),
+            border: `1px solid ${alpha(gray[700], 0.6)}`,
+            boxShadow: '0 28px 70px rgba(0, 0, 0, 0.35)',
           }),
           variants: [
             {
@@ -75,11 +78,12 @@ export const surfacesCustomizations: Components<Theme> = {
                 variant: 'outlined',
               },
               style: {
-                border: `1px solid ${(theme.vars || theme).palette.divider}`,
-                boxShadow: 'none',
-                background: 'hsl(0, 0%, 100%)',
+                border: '1px solid rgba(255, 255, 255, 0.7)',
+                boxShadow: '0 28px 70px rgba(97, 3, 97, 0.22)',
+                background: 'rgba(255, 255, 255, 0.85)',
+                backdropFilter: 'blur(12px)',
                 ...theme.applyStyles('dark', {
-                  background: alpha(gray[900], 0.4),
+                  background: alpha(gray[900], 0.6),
                 }),
               },
             },

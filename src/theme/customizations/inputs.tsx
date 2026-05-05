@@ -31,7 +31,9 @@ export const inputsCustomizations: Components<Theme> = {
       root: ({ theme }) => ({
         boxShadow: 'none',
         borderRadius: (theme.vars || theme).shape.borderRadius,
-        textTransform: 'none',
+        textTransform: 'uppercase',
+        letterSpacing: '0.12em',
+        fontWeight: 700,
         variants: [
           {
             props: {
@@ -57,31 +59,29 @@ export const inputsCustomizations: Components<Theme> = {
             },
             style: {
               color: 'white',
-              backgroundColor: gray[900],
-              backgroundImage: `linear-gradient(to bottom, ${gray[700]}, ${gray[800]})`,
-              boxShadow: `inset 0 1px 0 ${gray[600]}, inset 0 -1px 0 1px hsl(220, 0%, 0%)`,
-              border: `1px solid ${gray[700]}`,
+              backgroundColor: brand[700],
+              backgroundImage: 'none',
+              boxShadow: '0 10px 24px rgba(97, 3, 97, 0.28)',
+              border: `1px solid ${brand[700]}`,
               '&:hover': {
-                backgroundImage: 'none',
-                backgroundColor: gray[700],
-                boxShadow: 'none',
+                backgroundColor: brand[800],
+                boxShadow: '0 12px 26px rgba(97, 3, 97, 0.32)',
               },
               '&:active': {
-                backgroundColor: gray[800],
+                backgroundColor: brand[900],
               },
               ...theme.applyStyles('dark', {
-                color: 'black',
-                backgroundColor: gray[50],
-                backgroundImage: `linear-gradient(to bottom, ${gray[100]}, ${gray[50]})`,
-                boxShadow: 'inset 0 -1px 0  hsl(220, 30%, 80%)',
-                border: `1px solid ${gray[50]}`,
+                color: 'white',
+                backgroundColor: brand[500],
+                backgroundImage: 'none',
+                boxShadow: '0 10px 24px rgba(97, 3, 97, 0.35)',
+                border: `1px solid ${brand[500]}`,
                 '&:hover': {
-                  backgroundImage: 'none',
-                  backgroundColor: gray[300],
-                  boxShadow: 'none',
+                  backgroundColor: brand[600],
+                  boxShadow: '0 12px 26px rgba(97, 3, 97, 0.38)',
                 },
                 '&:active': {
-                  backgroundColor: gray[400],
+                  backgroundColor: brand[700],
                 },
               }),
             },
@@ -438,6 +438,52 @@ export const inputsCustomizations: Components<Theme> = {
       root: ({ theme }) => ({
         typography: theme.typography.caption,
         marginBottom: 8,
+      }),
+    },
+  },
+  MuiOutlinedInput: {
+    styleOverrides: {
+      root: ({ theme }) => ({
+        borderRadius: 16,
+        backgroundColor: 'rgba(97, 3, 97, 0.05)',
+        [`& .${outlinedInputClasses.notchedOutline}`]: {
+          borderColor: 'rgba(97, 3, 97, 0.15)',
+        },
+        '&:hover': {
+          backgroundColor: 'rgba(97, 3, 97, 0.08)',
+        },
+        [`&.${outlinedInputClasses.focused}`]: {
+          backgroundColor: 'rgba(97, 3, 97, 0.08)',
+          boxShadow: `0 0 0 3px ${alpha(brand[400], 0.2)}`,
+        },
+        [`&.${outlinedInputClasses.focused} .${outlinedInputClasses.notchedOutline}`]: {
+          borderColor: brand[500],
+        },
+        ...theme.applyStyles('dark', {
+          backgroundColor: alpha(brand[900], 0.25),
+          [`& .${outlinedInputClasses.notchedOutline}`]: {
+            borderColor: alpha(brand[500], 0.35),
+          },
+          '&:hover': {
+            backgroundColor: alpha(brand[900], 0.35),
+          },
+          [`&.${outlinedInputClasses.focused}`]: {
+            boxShadow: `0 0 0 3px ${alpha(brand[500], 0.25)}`,
+          },
+        }),
+      }),
+    },
+  },
+  MuiInputLabel: {
+    styleOverrides: {
+      root: ({ theme }) => ({
+        fontWeight: 700,
+        textTransform: 'uppercase',
+        letterSpacing: '0.12em',
+        color: brand[700],
+        ...theme.applyStyles('dark', {
+          color: brand[100],
+        }),
       }),
     },
   },

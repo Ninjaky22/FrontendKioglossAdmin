@@ -3,6 +3,23 @@ import { gray, orange } from '../themePrimitives';
 
 /* eslint-disable import/prefer-default-export */
 export const feedbackCustomizations: Components<Theme> = {
+  MuiCssBaseline: {
+    styleOverrides: {
+      body: {
+        minHeight: '100vh',
+        background:
+          'radial-gradient(1200px circle at 8% -10%, #ffffff 0%, #f6e8ff 42%, #fce7f3 100%)',
+        backgroundAttachment: 'fixed',
+      },
+      '#root': {
+        minHeight: '100vh',
+      },
+      '[data-mui-color-scheme="dark"] body': {
+        background:
+          'radial-gradient(1200px circle at 10% -10%, #2b0a2b 0%, #1f0d2e 40%, #120817 100%)',
+      },
+    },
+  },
   MuiAlert: {
     styleOverrides: {
       root: ({ theme }) => ({
@@ -24,7 +41,7 @@ export const feedbackCustomizations: Components<Theme> = {
     styleOverrides: {
       root: ({ theme }) => ({
         '& .MuiDialog-paper': {
-          borderRadius: '10px',
+          borderRadius: 24,
           border: '1px solid',
           borderColor: (theme.vars || theme).palette.divider,
         },

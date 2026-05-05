@@ -120,8 +120,8 @@ export const navigationCustomizations: Components<Theme> = {
     },
     styleOverrides: {
       root: ({ theme }) => ({
-        color: (theme.vars || theme).palette.text.primary,
-        fontWeight: 500,
+        color: brand[500],
+        fontWeight: 700,
         position: 'relative',
         textDecoration: 'none',
         width: 'fit-content',
@@ -132,8 +132,8 @@ export const navigationCustomizations: Components<Theme> = {
           height: '1px',
           bottom: 0,
           left: 0,
-          backgroundColor: (theme.vars || theme).palette.text.secondary,
-          opacity: 0.3,
+          backgroundColor: brand[500],
+          opacity: 0.4,
           transition: 'width 0.3s ease, opacity 0.3s ease',
         },
         '&:hover::before': {

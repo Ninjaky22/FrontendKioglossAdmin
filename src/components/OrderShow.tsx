@@ -83,11 +83,11 @@ export default function OrderShow() {
             <FormControl fullWidth sx={{ mb: 2 }}>
               <InputLabel>Estado</InputLabel>
               <Select value={status} label="Estado" onChange={(e) => setStatus(e.target.value)}>
-                <MenuItem value="PENDING">PENDING</MenuItem>
-                <MenuItem value="PROCESSING">PROCESSING</MenuItem>
-                <MenuItem value="SHIPPED">SHIPPED</MenuItem>
-                <MenuItem value="DELIVERED">DELIVERED</MenuItem>
-                <MenuItem value="CANCELLED">CANCELLED</MenuItem>
+                <MenuItem value="PENDING">PENDIENTES</MenuItem>
+                <MenuItem value="PROCESSING">PROCESANDO</MenuItem>
+                <MenuItem value="SHIPPED">ENVIADO</MenuItem>
+                <MenuItem value="DELIVERED">ENTREGADO</MenuItem>
+                <MenuItem value="CANCELLED">CANCELADO</MenuItem>
               </Select>
             </FormControl>
             <Button variant="contained" fullWidth onClick={handleStatusChange} disabled={isUpdating || status === order.status}>
