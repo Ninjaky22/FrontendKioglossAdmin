@@ -11,6 +11,7 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import DescriptionIcon from '@mui/icons-material/Description';
 import LayersIcon from '@mui/icons-material/Layers';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { matchPath, useLocation } from 'react-router';
 import DashboardSidebarContext from '../context/DashboardSidebarContext';
 import { DRAWER_WIDTH, MINI_DRAWER_WIDTH } from '../constants';
@@ -140,6 +141,13 @@ export default function DashboardSidebar({
               icon={<DescriptionIcon />}
               href="/orders"
               selected={!!matchPath('/orders/*', pathname) || pathname === '/'}
+            />
+            <DashboardSidebarPageItem
+              id="reports"
+              title="Reportes"
+              icon={<TrendingUpIcon />}
+              href="/reports"
+              selected={!!matchPath('/reports/*', pathname)}
             />
             <DashboardSidebarPageItem
               id="products"
