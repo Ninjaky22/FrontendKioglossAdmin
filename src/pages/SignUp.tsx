@@ -1,22 +1,26 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
 import CssBaseline from '@mui/material/CssBaseline';
 import Divider from '@mui/material/Divider';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
 import FormControl from '@mui/material/FormControl';
+import FormHelperText from '@mui/material/FormHelperText';
 import Link from '@mui/material/Link';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import MuiCard from '@mui/material/Card';
 import Alert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
 import CircularProgress from '@mui/material/CircularProgress';
+import InputAdornment from '@mui/material/InputAdornment';
+import IconButton from '@mui/material/IconButton';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import PersonAdd from '@mui/icons-material/PersonAdd';
 import { styled } from '@mui/material/styles';
 import ColorModeSelect from '../theme/ColorModeSelect';
-import SitemarkIcon from '../components/SitemarkIcon';
 import { Link as RouterLink, useNavigate } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { signUpUser } from '../store/actions/signUp';
@@ -27,72 +31,68 @@ import {
 } from '../store/selectors/session';
 
 const Card = styled(MuiCard)(({ theme }) => ({
-  overflowY: "scroll",
   display: 'flex',
   flexDirection: 'column',
   alignSelf: 'center',
   width: '100%',
-  padding: theme.spacing(4),
-  gap: theme.spacing(2),
+  maxWidth: 660,
   margin: 'auto',
-  boxShadow:
-    'hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px',
-  [theme.breakpoints.up('sm')]: {
-    width: '450px',
-  },
+  padding: 0,
+  overflow: 'hidden',
+  borderRadius: 24,
+  backgroundColor: 'rgba(255, 255, 255, 0.85)',
+  backdropFilter: 'blur(12px)',
+  border: '1px solid rgba(255, 255, 255, 0.7)',
+  boxShadow: '0 28px 70px rgba(97, 3, 97, 0.22)',
   ...theme.applyStyles('dark', {
-    boxShadow:
-      'hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px',
+    backgroundColor: 'rgba(30, 15, 36, 0.75)',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    boxShadow: '0 28px 70px rgba(0, 0, 0, 0.35)',
   }),
 }));
 
 const SignUpContainer = styled(Stack)(({ theme }) => ({
-  height: 'calc((1 - var(--template-frame-height, 0)) * 100dvh)',
-  minHeight: '100%',
+  minHeight: '100vh',
   padding: theme.spacing(2),
-  [theme.breakpoints.up('sm')]: {
-    padding: theme.spacing(4),
-  },
-  '&::before': {
-    content: '""',
-    display: 'block',
-    position: 'absolute',
-    zIndex: -1,
-    inset: 0,
-    backgroundImage:
-      'radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))',
-    backgroundRepeat: 'no-repeat',
-    ...theme.applyStyles('dark', {
-      backgroundImage:
-        'radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))',
-    }),
-  },
+  alignItems: 'center',
+  justifyContent: 'center',
+  position: 'relative',
 }));
 
 export default function SignUp() {
   const dispatch = useDispatch<any>();
   const navigate = useNavigate();
 
-  // Selectores de Redux - ahora usando los selectores de session
+  // Selectores de Redux
   const isLoading = useSelector(sessionAuthenticationInProgressSelector);
   const error = useSelector(sessionAuthenticationErrorSelector);
   const isAuthenticated = useSelector(sessionAuthenticatedSelector);
 
   const [emailError, setEmailError] = React.useState(false);
-  const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
   const [passwordError, setPasswordError] = React.useState(false);
-  const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
   const [nameError, setNameError] = React.useState(false);
-  const [nameErrorMessage, setNameErrorMessage] = React.useState('');
   const [phoneError, setPhoneError] = React.useState(false);
-  const [phoneErrorMessage, setPhoneErrorMessage] = React.useState('');
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [toastOpen, setToastOpen] = React.useState(false);
+  const [toastMessage, setToastMessage] = React.useState('');
 
-  // Redirigir al dashboard si está autenticado (ya sea por login o registro)
   React.useEffect(() => {
     if (isAuthenticated) {
       navigate('/dashboard');
     }
   }, [isAuthenticated, navigate]);
+
+  React.useEffect(() => {
+    if (error) {
+      setToastMessage(error.message || 'Error al registrar usuario');
+      setToastOpen(true);
+    }
+  }, [error]);
+
+  const handleToastClose = (_: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') return;
+    setToastOpen(false);
+  };
 
   const validateInputs = () => {
     const email = document.getElementById('email') as HTMLInputElement;
@@ -101,41 +101,55 @@ export default function SignUp() {
     const phone = document.getElementById('phone') as HTMLInputElement;
 
     let isValid = true;
+    let firstErrorMessage = '';
 
-    if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
-      setEmailError(true);
-      setEmailErrorMessage('Please enter a valid email address.');
-      isValid = false;
-    } else {
-      setEmailError(false);
-      setEmailErrorMessage('');
-    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/;
+    const phoneRegex = /^\d{10}$/;
 
-    if (!password.value || password.value.length < 6) {
-      setPasswordError(true);
-      setPasswordErrorMessage('Password must be at least 6 characters long.');
-      isValid = false;
-    } else {
-      setPasswordError(false);
-      setPasswordErrorMessage('');
-    }
+    const nameValue = name.value.trim();
+    const emailValue = email.value.trim();
+    const phoneValue = phone.value.trim();
+    const passwordValue = password.value;
 
-    if (!name.value || name.value.length < 1) {
+    if (!nameValue || nameValue.length < 3) {
       setNameError(true);
-      setNameErrorMessage('Name is required.');
+      if (!firstErrorMessage) firstErrorMessage = 'El nombre debe tener al menos 3 caracteres.';
       isValid = false;
     } else {
       setNameError(false);
-      setNameErrorMessage('');
     }
 
-    if (!phone.value || !/^\+?\d{10,15}$/.test(phone.value)) {
+    if (!emailValue || !emailRegex.test(emailValue)) {
+      setEmailError(true);
+      if (!firstErrorMessage) firstErrorMessage = 'Ingresa un correo válido.';
+      isValid = false;
+    } else {
+      setEmailError(false);
+    }
+
+    if (!phoneValue || !phoneRegex.test(phoneValue)) {
       setPhoneError(true);
-      setPhoneErrorMessage('Please enter a valid phone number.');
+      if (!firstErrorMessage) firstErrorMessage = 'El teléfono debe tener 10 dígitos.';
       isValid = false;
     } else {
       setPhoneError(false);
-      setPhoneErrorMessage('');
+    }
+
+    const passwordLengthValid = passwordValue.length >= 8 && passwordValue.length <= 20;
+    const passwordFormatValid = passwordRegex.test(passwordValue);
+    if (!passwordLengthValid || !passwordFormatValid) {
+      setPasswordError(true);
+      if (!firstErrorMessage)
+        firstErrorMessage = 'La contraseña debe tener mayúscula, número y carácter especial.';
+      isValid = false;
+    } else {
+      setPasswordError(false);
+    }
+
+    if (!isValid && firstErrorMessage) {
+      setToastMessage(firstErrorMessage);
+      setToastOpen(true);
     }
 
     return isValid;
@@ -143,29 +157,22 @@ export default function SignUp() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    if (!validateInputs()) {
-      return;
-    }
+    if (!validateInputs()) return;
 
     const data = new FormData(event.currentTarget);
-    
     const userData = {
       email: data.get('email') as string,
       name: data.get('name') as string,
       password: data.get('password') as string,
       phoneNumber: data.get('phone') as string,
-      profileImage: "",
+      profileImage: '',
       isSuperuser: true,
-      account: {
-        pointsPerPurchase: 0,
-        isActive: true
-      },
+      account: { pointsPerPurchase: 0, isActive: true },
       address: {
-        street: data.get('street') as string || "",
-        streetNumber: data.get('streetNumber') as string || "",
-        distric: data.get('district') as string || ""
-      }
+        street: (data.get('street') as string) || '',
+        streetNumber: (data.get('streetNumber') as string) || '',
+        distric: (data.get('district') as string) || '',
+      },
     };
 
     dispatch(signUpUser(userData));
@@ -174,173 +181,284 @@ export default function SignUp() {
   return (
     <>
       <CssBaseline enableColorScheme />
-      <ColorModeSelect sx={{ position: 'fixed', top: '1rem', right: '1rem' }} />
-      <SignUpContainer direction="column" justifyContent="space-between">
+      <SignUpContainer direction="column">
+        <ColorModeSelect
+          sx={{
+            position: 'fixed',
+            top: '1rem',
+            right: '1rem',
+            zIndex: (theme) => theme.zIndex.modal + 1,
+          }}
+        />
         <Card variant="outlined">
-          <SitemarkIcon />
-          <Typography
-            component="h1"
-            variant="h4"
-            sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
-          >
-            Sign up
-          </Typography>
+          <Box sx={{ height: 6, backgroundColor: '#610361' }} />
 
-          {error && (
-            <Alert severity="error">
-              {error.message || 'Error al registrar usuario'}
-            </Alert>
-          )}
-
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-          >
-            <FormControl>
-              <FormLabel htmlFor="name">Full name</FormLabel>
-              <TextField
-                autoComplete="name"
-                name="name"
-                required
-                fullWidth
-                id="name"
-                placeholder="Jon Snow"
-                error={nameError}
-                helperText={nameErrorMessage}
-                color={nameError ? 'error' : 'primary'}
-                disabled={isLoading}
-              />
-            </FormControl>
-
-            <FormControl>
-              <FormLabel htmlFor="email">Email</FormLabel>
-              <TextField
-                required
-                fullWidth
-                id="email"
-                placeholder="your@email.com"
-                name="email"
-                autoComplete="email"
-                variant="outlined"
-                error={emailError}
-                helperText={emailErrorMessage}
-                color={emailError ? 'error' : 'primary'}
-                disabled={isLoading}
-              />
-            </FormControl>
-
-            <FormControl>
-              <FormLabel htmlFor="phone">Phone Number</FormLabel>
-              <TextField
-                required
-                fullWidth
-                id="phone"
-                placeholder="+573091234567"
-                name="phone"
-                autoComplete="tel"
-                variant="outlined"
-                error={phoneError}
-                helperText={phoneErrorMessage}
-                color={phoneError ? 'error' : 'primary'}
-                disabled={isLoading}
-              />
-            </FormControl>
-
-            <FormControl>
-              <FormLabel htmlFor="password">Password</FormLabel>
-              <TextField
-                required
-                fullWidth
-                name="password"
-                placeholder="••••••"
-                type="password"
-                id="password"
-                autoComplete="new-password"
-                variant="outlined"
-                error={passwordError}
-                helperText={passwordErrorMessage}
-                color={passwordError ? 'error' : 'primary'}
-                disabled={isLoading}
-              />
-            </FormControl>
-
-            <Typography variant="subtitle2" sx={{ mt: 1, mb: 0 }}>
-              Address (Optional)
-            </Typography>
-
-            <FormControl>
-              <FormLabel htmlFor="street">Street</FormLabel>
-              <TextField
-                fullWidth
-                id="street"
-                name="street"
-                placeholder="Calle 10"
-                variant="outlined"
-                disabled={isLoading}
-              />
-            </FormControl>
-
-            <FormControl>
-              <FormLabel htmlFor="streetNumber">Street Number</FormLabel>
-              <TextField
-                fullWidth
-                id="streetNumber"
-                name="streetNumber"
-                placeholder="15-20"
-                variant="outlined"
-                disabled={isLoading}
-              />
-            </FormControl>
-
-            <FormControl>
-              <FormLabel htmlFor="district">District</FormLabel>
-              <TextField
-                fullWidth
-                id="district"
-                name="district"
-                placeholder="Centro"
-                variant="outlined"
-                disabled={isLoading}
-              />
-            </FormControl>
-
-            <FormControlLabel
-              control={<Checkbox value="allowExtraEmails" color="primary" />}
-              label="I want to receive updates via email."
-              disabled={isLoading}
-            />
-
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              disabled={isLoading}
-              startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : null}
-            >
-              {isLoading ? 'Signing up...' : 'Sign up'}
-            </Button>
-          </Box>
-
-          <Divider>
-            <Typography sx={{ color: 'text.secondary' }}>or</Typography>
-          </Divider>
-
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Typography sx={{ textAlign: 'center' }}>
-              Already have an account?{' '}
-              <Link
-                component={RouterLink}
-                to="/log-in"
-                variant="body2"
-                sx={{ alignSelf: 'center' }}
+          <Box sx={{ px: 4, py: 2 }}>
+          
+            <Box sx={{ textAlign: 'center', mb: 1.5 }}>
+              <Box
+                sx={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 3,
+                  backgroundColor: '#610361',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 8px',
+                  boxShadow: '0 10px 22px rgba(97, 3, 97, 0.35)',
+                }}
               >
-                Sign in
+                <PersonAdd sx={{ color: '#fff', fontSize: 20 }} />
+              </Box>
+              <Typography
+                component="h1"
+                variant="h5"
+                sx={{ fontWeight: 800, color: '#610361', lineHeight: 1.2 }}
+              >
+                Regístrate
+              </Typography>
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                Completa tus datos para empezar.
+              </Typography>
+            </Box>
+
+            <Box
+              component="form"
+              onSubmit={handleSubmit}
+              noValidate
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                // ✅ Gap reducido de 2→1.5 para ahorrar espacio vertical
+                gap: 1.5,
+              }}
+            >
+              {/* Fila 1: Nombre + Email */}
+              <FormControl>
+                <FormLabel htmlFor="name" sx={{ fontSize: '0.78rem', mb: 0.3 }}>
+                  Nombre completo
+                </FormLabel>
+                <TextField
+                  autoComplete="name"
+                  name="name"
+                  required
+                  fullWidth
+                  id="name"
+                  placeholder="Tu nombre"
+                  error={nameError}
+                  color={nameError ? 'error' : 'primary'}
+                  disabled={isLoading}
+                  size="small"
+                  inputProps={{ maxLength: 50 }}
+                />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel htmlFor="email" sx={{ fontSize: '0.78rem', mb: 0.3 }}>
+                  Email
+                </FormLabel>
+                <TextField
+                  required
+                  fullWidth
+                  id="email"
+                  placeholder="tucorreo@dominio.com"
+                  name="email"
+                  autoComplete="email"
+                  variant="outlined"
+                  error={emailError}
+                  color={emailError ? 'error' : 'primary'}
+                  disabled={isLoading}
+                  size="small"
+                  inputProps={{ maxLength: 200 }}
+                />
+              </FormControl>
+
+              {/* Fila 2: Teléfono + Contraseña */}
+              <FormControl>
+                <FormLabel htmlFor="phone" sx={{ fontSize: '0.78rem', mb: 0.3 }}>
+                  Teléfono
+                </FormLabel>
+                <TextField
+                  required
+                  fullWidth
+                  id="phone"
+                  placeholder="3001234567"
+                  name="phone"
+                  autoComplete="tel"
+                  variant="outlined"
+                  error={phoneError}
+                  color={phoneError ? 'error' : 'primary'}
+                  disabled={isLoading}
+                  size="small"
+                  inputProps={{
+                    inputMode: 'numeric',
+                    maxLength: 10,
+                    pattern: '[0-9]*',
+                    onInput: (event) => {
+                      const target = event.currentTarget as HTMLInputElement;
+                      target.value = target.value.replace(/\D/g, '').slice(0, 10);
+                    },
+                  }}
+                />
+              </FormControl>
+
+              <FormControl>
+                <FormLabel htmlFor="password" sx={{ fontSize: '0.78rem', mb: 0.3 }}>
+                  Contraseña
+                </FormLabel>
+                <TextField
+                  required
+                  fullWidth
+                  name="password"
+                  placeholder="••••••••"
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  autoComplete="new-password"
+                  variant="outlined"
+                  error={passwordError}
+                  color={passwordError ? 'error' : 'primary'}
+                  disabled={isLoading}
+                  size="small"
+                  inputProps={{ minLength: 8, maxLength: 20 }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowPassword((prev) => !prev)}
+                          edge="end"
+                          aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                          disableRipple
+                          sx={{
+                            p: 0,
+                            '&:hover': { backgroundColor: 'transparent' },
+                          }}
+                        >
+                          {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                <FormHelperText sx={{ color: 'text.secondary', fontSize: '0.68rem', mt: 0.3 }}>
+                  Mínimo una mayúscula, un número y un carácter especial.
+                </FormHelperText>
+              </FormControl>
+            
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  mt: 0.5,
+                  mb: 0,
+                  textAlign: 'center',
+                  fontWeight: 700,
+                  fontSize: '18px',                
+                  color: '#610361',
+                  gridColumn: '1 / -1',
+                }}
+              >
+                Dirección (opcional)
+              </Typography>
+
+              <Box
+                sx={{
+                  gridColumn: '1 / -1',
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' },
+                  gap: 1.5,
+                }}
+              >
+                <FormControl>
+                  <FormLabel htmlFor="street" sx={{ fontSize: '0.78rem', mb: 0.3 }}>
+                    Calle
+                  </FormLabel>
+                  <TextField
+                    fullWidth
+                    id="street"
+                    name="street"
+                    placeholder="Calle 10"
+                    variant="outlined"
+                    disabled={isLoading}
+                    size="small"
+                  />
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel htmlFor="streetNumber" sx={{ fontSize: '0.78rem', mb: 0.3 }}>
+                    Número
+                  </FormLabel>
+                  <TextField
+                    fullWidth
+                    id="streetNumber"
+                    name="streetNumber"
+                    placeholder="15-20"
+                    variant="outlined"
+                    disabled={isLoading}
+                    size="small"
+                  />
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel htmlFor="district" sx={{ fontSize: '0.78rem', mb: 0.3 }}>
+                    Barrio
+                  </FormLabel>
+                  <TextField
+                    fullWidth
+                    id="district"
+                    name="district"
+                    placeholder="Centro"
+                    variant="outlined"
+                    disabled={isLoading}
+                    size="small"
+                  />
+                </FormControl>
+              </Box>
+
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                disabled={isLoading}
+                startIcon={isLoading ? <CircularProgress size={18} color="inherit" /> : null}
+                sx={{
+                  gridColumn: '1 / -1',
+                  backgroundColor: '#610361',
+                  '&:hover': { backgroundColor: '#4a024a' },
+                  fontWeight: 700,
+                  letterSpacing: 1,
+                  py: 1,
+                }}
+              >
+                {isLoading ? 'Registrando...' : 'Registrarme'}
+              </Button>
+            </Box>
+
+            <Divider sx={{ my: 1.5 }}>
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                o
+              </Typography>
+            </Divider>
+
+            <Typography variant="body2" sx={{ textAlign: 'center' }}>
+              ¿Ya tienes cuenta?{' '}
+              <Link component={RouterLink} to="/log-in" variant="body2" sx={{ fontWeight: 600 }}>
+                Iniciar sesión
               </Link>
             </Typography>
           </Box>
         </Card>
       </SignUpContainer>
+
+      <Snackbar
+        open={toastOpen}
+        autoHideDuration={4000}
+        onClose={handleToastClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert onClose={handleToastClose} severity="error" sx={{ width: '100%' }}>
+          {toastMessage}
+        </Alert>
+      </Snackbar>
     </>
   );
 }
