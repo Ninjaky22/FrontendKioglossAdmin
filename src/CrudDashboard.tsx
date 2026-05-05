@@ -1,5 +1,6 @@
+import * as React from 'react';
 import CssBaseline from '@mui/material/CssBaseline';
-import { createHashRouter, Navigate, RouterProvider } from 'react-router';
+import { createHashRouter, RouterProvider, useNavigate } from 'react-router';
 import DashboardLayout from './components/DashboardLayout';
 import EmployeeList from './components/EmployeeList';
 import EmployeeShow from './components/EmployeeShow';
@@ -9,6 +10,7 @@ import NotificationsProvider from './hooks/useNotifications/NotificationsProvide
 import DialogsProvider from './hooks/useDialogs/DialogsProvider';
 import AppTheme from './theme/AppTheme';
 import SignIn from './pages/SignIn';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import {
   dataGridCustomizations,
   datePickersCustomizations,
@@ -33,20 +35,45 @@ import UserList from './components/UserList';
 import UserShow from './components/UserShow';
 import ReportsPage from './pages/ReportsPage';
 
+const RootRedirect = () => {
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const token = searchParams.get('token');
+
+    if (token) {
+      navigate(`/reset-password?token=${encodeURIComponent(token)}`, { replace: true });
+      return;
+    }
+
+    navigate('/log-in', { replace: true });
+  }, [navigate]);
+
+  return null;
+};
 
 
 const router = createHashRouter([
   {
     path: '/',
-    element: <Navigate to="/log-in" replace />,
+    Component: RootRedirect,
   },
   {
     path: '/log-in',
     Component: SignIn,
   },
+  {
+    path: '/sign-in',
+    Component: SignIn,
+  },
     {
     path: '/sign-up',
     Component: SignUp,
+  },
+  {
+    path: '/reset-password',
+    Component: ResetPasswordPage,
   },
   {
     Component: DashboardLayout,
@@ -148,13 +175,13 @@ const themeComponents = {
 
 export default function CrudDashboard(props: { disableCustomTheme?: boolean }) {
   return (
-    <>
+    <AppTheme themeComponents={themeComponents} disableCustomTheme={props.disableCustomTheme}>
       <CssBaseline enableColorScheme />
       <NotificationsProvider>
         <DialogsProvider>
           <RouterProvider router={router} />
         </DialogsProvider>
       </NotificationsProvider>
-    </>
+    </AppTheme>
   );
 }
