@@ -6,6 +6,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Alert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
@@ -20,29 +21,63 @@ interface ForgotPasswordProps {
 
 export default function ForgotPassword({ open, handleClose }: ForgotPasswordProps) {
   const [email, setEmail] = React.useState('');
-  const [emailError, setEmailError] = React.useState('');
+  const [emailError, setEmailError] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
-  const [alert, setAlert] = React.useState<
-    { type: 'success' | 'error'; message: string } | null
-  >(null);
+  const [toastOpen, setToastOpen] = React.useState(false);
+  const [toastMessage, setToastMessage] = React.useState('');
+  const [toastSeverity, setToastSeverity] = React.useState<'success' | 'warning' | 'error'>('error');
+
+  const toastDuration = toastSeverity === 'success' ? 3000 : 4000;
+  const toastBackground =
+    toastSeverity === 'success'
+      ? '#2e7d32'
+      : toastSeverity === 'warning'
+      ? '#ed6c02'
+      : '#d32f2f';
+
+  const showToast = React.useCallback(
+    (message: string, severity: 'success' | 'warning' | 'error') => {
+      setToastMessage(message);
+      setToastSeverity(severity);
+      setToastOpen(true);
+    },
+    []
+  );
+
+  const handleToastClose = (_: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setToastOpen(false);
+  };
+
+  const getErrorDetails = (error: unknown) => {
+    if (typeof error === 'object' && error !== null) {
+      const response = (error as { response?: { status?: number; data?: { message?: string } } })
+        .response;
+      const message =
+        response?.data?.message || (error as { message?: string }).message || '';
+      return { status: response?.status, message };
+    }
+    return { status: undefined, message: '' };
+  };
 
   const validateEmail = () => {
     const trimmedEmail = email.trim();
-    if (!trimmedEmail) {
-      setEmailError('El correo es obligatorio.');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!trimmedEmail || !emailRegex.test(trimmedEmail)) {
+      setEmailError(true);
+      showToast('Ingresa un correo con formato válido.', 'error');
       return false;
     }
-    if (!/\S+@\S+\.\S+/.test(trimmedEmail)) {
-      setEmailError('Ingresa un correo válido.');
-      return false;
-    }
-    setEmailError('');
+
+    setEmailError(false);
     return true;
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setAlert(null);
 
     if (!validateEmail()) {
       return;
@@ -50,17 +85,22 @@ export default function ForgotPassword({ open, handleClose }: ForgotPasswordProp
 
     setIsLoading(true);
     try {
-      const response = await forgotPasswordService(email.trim());
-      const message =
-        response?.data?.message ||
-        'Si el email existe, recibirás un enlace para restablecer tu contraseña';
-      setAlert({ type: 'success', message });
+      await forgotPasswordService(email.trim());
+      showToast('Te enviamos un correo con el enlace de recuperación.', 'success');
       setEmail('');
     } catch (error) {
-      setAlert({
-        type: 'error',
-        message: 'No se pudo enviar el enlace. Intenta de nuevo.',
-      });
+      const { status, message } = getErrorDetails(error);
+      const normalizedMessage = message.toLowerCase();
+      const isEmailNotFound =
+        status === 404 ||
+        normalizedMessage.includes('no existe') ||
+        normalizedMessage.includes('not found');
+
+      if (isEmailNotFound) {
+        showToast('No encontramos una cuenta con ese correo.', 'warning');
+      } else {
+        showToast('Ocurrió un error inesperado. Intenta de nuevo.', 'error');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -93,7 +133,6 @@ export default function ForgotPassword({ open, handleClose }: ForgotPasswordProp
           Ingresa el correo de tu cuenta y te enviaremos un enlace para restablecer
           tu contraseña.
         </DialogContentText>
-        {alert && <Alert severity={alert.type}>{alert.message}</Alert>}
         <FormControl>
           <FormLabel htmlFor="email">Correo</FormLabel>
           <TextField
@@ -108,9 +147,9 @@ export default function ForgotPassword({ open, handleClose }: ForgotPasswordProp
             fullWidth
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            error={Boolean(emailError)}
-            helperText={emailError}
+            error={emailError}
             disabled={isLoading}
+            inputProps={{ maxLength: 200 }}
           />
         </FormControl>
       </DialogContent>
@@ -127,6 +166,21 @@ export default function ForgotPassword({ open, handleClose }: ForgotPasswordProp
           {isLoading ? 'Enviando...' : 'Enviar enlace'}
         </Button>
       </DialogActions>
+      <Snackbar
+        open={toastOpen}
+        autoHideDuration={toastDuration}
+        onClose={handleToastClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={handleToastClose}
+          severity={toastSeverity}
+          variant="filled"
+          sx={{ width: '100%', backgroundColor: toastBackground }}
+        >
+          {toastMessage}
+        </Alert>
+      </Snackbar>
     </Dialog>
   );
 }
