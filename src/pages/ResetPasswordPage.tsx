@@ -10,6 +10,7 @@ import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
 import MuiCard from '@mui/material/Card';
 import Alert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
 import CircularProgress from '@mui/material/CircularProgress';
 import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@mui/material/IconButton';
@@ -60,15 +61,15 @@ const passwordRules = {
   hasSpecialChar: (v: string) => /[!@#$%^&*(),.?":{}|<>+-]/.test(v),
 };
 
-const getResetErrorMessage = (error: unknown) => {
-  if (typeof error === 'object' && error !== null && 'response' in error) {
-    const response = (error as { response?: { data?: { message?: string } } }).response;
-    const message = response?.data?.message;
-    if (message) {
-      return message;
-    }
+const getErrorDetails = (error: unknown) => {
+  if (typeof error === 'object' && error !== null) {
+    const response = (error as { response?: { status?: number; data?: { message?: string } } })
+      .response;
+    const message =
+      response?.data?.message || (error as { message?: string }).message || '';
+    return { status: response?.status, message };
   }
-  return 'No se pudo restablecer la contraseña. Intenta de nuevo.';
+  return { status: undefined, message: '' };
 };
 
 export default function ResetPasswordPage(props: { disableCustomTheme?: boolean }) {
@@ -81,9 +82,26 @@ export default function ResetPasswordPage(props: { disableCustomTheme?: boolean 
   const [showNewPassword, setShowNewPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
-  const [alert, setAlert] = React.useState<
-    { type: 'success' | 'error'; message: string } | null
-  >(null);
+  const [toastOpen, setToastOpen] = React.useState(false);
+  const [toastMessage, setToastMessage] = React.useState('');
+  const [toastSeverity, setToastSeverity] = React.useState<'success' | 'warning' | 'error'>('error');
+
+  const toastDuration = toastSeverity === 'success' ? 3000 : 4000;
+  const toastBackground =
+    toastSeverity === 'success'
+      ? '#2e7d32'
+      : toastSeverity === 'warning'
+      ? '#ed6c02'
+      : '#d32f2f';
+
+  const showToast = React.useCallback(
+    (message: string, severity: 'success' | 'warning' | 'error') => {
+      setToastMessage(message);
+      setToastSeverity(severity);
+      setToastOpen(true);
+    },
+    []
+  );
 
   React.useEffect(() => {
     if (!token) {
@@ -102,23 +120,30 @@ export default function ResetPasswordPage(props: { disableCustomTheme?: boolean 
   const isPasswordValid = Object.values(ruleStatus).every(Boolean);
   const passwordsMatch = newPassword === confirmPassword && newPassword.length > 0;
   const canSubmit = isPasswordValid && passwordsMatch && !isLoading;
-  const showMismatchAlert =
-    !alert && confirmPassword.length > 0 && newPassword !== confirmPassword;
+
+  const handleToastClose = (_: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setToastOpen(false);
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setAlert(null);
 
     if (!passwordsMatch) {
-      setAlert({ type: 'error', message: 'Las contraseñas no coinciden' });
+      showToast(
+        'Las contraseñas no coinciden. Verifica e intenta de nuevo.',
+        'error'
+      );
       return;
     }
 
     if (!isPasswordValid) {
-      setAlert({
-        type: 'error',
-        message: 'La contraseña no cumple los requisitos.',
-      });
+      showToast(
+        'La contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un carácter especial.',
+        'error'
+      );
       return;
     }
 
@@ -130,15 +155,27 @@ export default function ResetPasswordPage(props: { disableCustomTheme?: boolean 
     setIsLoading(true);
     try {
       await resetPasswordService(token, newPassword);
-      setAlert({
-        type: 'success',
-        message: '¡Contraseña actualizada! Redirigiendo al login...',
-      });
+      showToast('¡Contraseña actualizada! Ya puedes iniciar sesión.', 'success');
       window.setTimeout(() => {
         navigate('/sign-in');
       }, 2000);
     } catch (error) {
-      setAlert({ type: 'error', message: getResetErrorMessage(error) });
+      const { status, message } = getErrorDetails(error);
+      const normalizedMessage = message.toLowerCase();
+      const isTokenIssue =
+        status === 400 ||
+        status === 401 ||
+        status === 403 ||
+        status === 404 ||
+        normalizedMessage.includes('token') ||
+        normalizedMessage.includes('expir') ||
+        normalizedMessage.includes('invalid');
+
+      if (isTokenIssue) {
+        showToast('El enlace de recuperación ha expirado. Solicita uno nuevo.', 'warning');
+      } else {
+        showToast('Ocurrió un error inesperado. Intenta de nuevo.', 'error');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -151,26 +188,26 @@ export default function ResetPasswordPage(props: { disableCustomTheme?: boolean 
         <ColorModeSelect sx={{ position: 'fixed', top: '1rem', right: '1rem' }} />
         <Card variant="outlined">
           <Box sx={{ height: 6, backgroundColor: '#610361' }} />
-          <Box sx={{ px: 4, py: 3 }}>
-            <Box sx={{ textAlign: 'center', mb: 3 }}>
+          <Box sx={{ px: 4, py: 2 }}>
+            <Box sx={{ textAlign: 'center', mb: 1.5 }}>
               <Box
                 sx={{
-                  width: 48,
-                  height: 48,
+                  width: 44,
+                  height: 44,
                   borderRadius: 3,
                   backgroundColor: '#610361',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  margin: '0 auto 12px',
+                  margin: '0 auto 8px',
                   boxShadow: '0 10px 22px rgba(97, 3, 97, 0.35)',
                 }}
               >
-                <LockReset sx={{ color: '#fff' }} />
+                <LockReset sx={{ color: '#fff', fontSize: 22 }} />
               </Box>
               <Typography
                 component="h1"
-                variant="h4"
+                variant="h5"
                 sx={{ fontWeight: 800, color: '#610361' }}
               >
                 Nueva contraseña
@@ -180,16 +217,6 @@ export default function ResetPasswordPage(props: { disableCustomTheme?: boolean 
               </Typography>
             </Box>
 
-            {alert ? (
-              <Alert severity={alert.type} sx={{ mb: 2 }}>
-                {alert.message}
-              </Alert>
-            ) : showMismatchAlert ? (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                Las contraseñas no coinciden
-              </Alert>
-            ) : null}
-
             <Box
               component="form"
               onSubmit={handleSubmit}
@@ -198,7 +225,7 @@ export default function ResetPasswordPage(props: { disableCustomTheme?: boolean 
                 display: 'flex',
                 flexDirection: 'column',
                 width: '100%',
-                gap: 2,
+                gap: 1.5,
               }}
             >
             <FormControl>
@@ -212,6 +239,7 @@ export default function ResetPasswordPage(props: { disableCustomTheme?: boolean 
                 required
                 fullWidth
                 variant="outlined"
+                size="small"
                 disabled={isLoading}
                 value={newPassword}
                 onChange={(event) => setNewPassword(event.target.value)}
@@ -245,6 +273,7 @@ export default function ResetPasswordPage(props: { disableCustomTheme?: boolean 
                 required
                 fullWidth
                 variant="outlined"
+                size="small"
                 disabled={isLoading}
                 value={confirmPassword}
                 onChange={(event) => setConfirmPassword(event.target.value)}
@@ -270,43 +299,52 @@ export default function ResetPasswordPage(props: { disableCustomTheme?: boolean 
             </FormControl>
 
             <Stack spacing={0.5} sx={{ mt: 0.5 }}>
-              <Typography variant="caption">Requisitos (en tiempo real):</Typography>
+              <Typography variant="caption" sx={{ fontSize: '0.72rem' }}>
+                Requisitos (en tiempo real):
+              </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 {ruleStatus.minLength ? (
-                  <CheckCircleOutline color="success" fontSize="small" />
+                  <CheckCircleOutline color="success" sx={{ fontSize: 16 }} />
                 ) : (
-                  <CancelOutlined color="error" fontSize="small" />
+                  <CancelOutlined color="error" sx={{ fontSize: 16 }} />
                 )}
                 <Typography
                   variant="caption"
-                  sx={{ color: ruleStatus.minLength ? 'success.main' : 'error.main' }}
+                  sx={{
+                    color: ruleStatus.minLength ? 'success.main' : 'error.main',
+                    fontSize: '0.72rem',
+                  }}
                 >
                   Mínimo 8 caracteres
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 {ruleStatus.maxLength ? (
-                  <CheckCircleOutline color="success" fontSize="small" />
+                  <CheckCircleOutline color="success" sx={{ fontSize: 16 }} />
                 ) : (
-                  <CancelOutlined color="error" fontSize="small" />
+                  <CancelOutlined color="error" sx={{ fontSize: 16 }} />
                 )}
                 <Typography
                   variant="caption"
-                  sx={{ color: ruleStatus.maxLength ? 'success.main' : 'error.main' }}
+                  sx={{
+                    color: ruleStatus.maxLength ? 'success.main' : 'error.main',
+                    fontSize: '0.72rem',
+                  }}
                 >
                   Máximo 20 caracteres
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 {ruleStatus.hasUppercase ? (
-                  <CheckCircleOutline color="success" fontSize="small" />
+                  <CheckCircleOutline color="success" sx={{ fontSize: 16 }} />
                 ) : (
-                  <CancelOutlined color="error" fontSize="small" />
+                  <CancelOutlined color="error" sx={{ fontSize: 16 }} />
                 )}
                 <Typography
                   variant="caption"
                   sx={{
                     color: ruleStatus.hasUppercase ? 'success.main' : 'error.main',
+                    fontSize: '0.72rem',
                   }}
                 >
                   Al menos una mayúscula
@@ -314,27 +352,31 @@ export default function ResetPasswordPage(props: { disableCustomTheme?: boolean 
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 {ruleStatus.hasNumber ? (
-                  <CheckCircleOutline color="success" fontSize="small" />
+                  <CheckCircleOutline color="success" sx={{ fontSize: 16 }} />
                 ) : (
-                  <CancelOutlined color="error" fontSize="small" />
+                  <CancelOutlined color="error" sx={{ fontSize: 16 }} />
                 )}
                 <Typography
                   variant="caption"
-                  sx={{ color: ruleStatus.hasNumber ? 'success.main' : 'error.main' }}
+                  sx={{
+                    color: ruleStatus.hasNumber ? 'success.main' : 'error.main',
+                    fontSize: '0.72rem',
+                  }}
                 >
                   Al menos un número
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 {ruleStatus.hasSpecialChar ? (
-                  <CheckCircleOutline color="success" fontSize="small" />
+                  <CheckCircleOutline color="success" sx={{ fontSize: 16 }} />
                 ) : (
-                  <CancelOutlined color="error" fontSize="small" />
+                  <CancelOutlined color="error" sx={{ fontSize: 16 }} />
                 )}
                 <Typography
                   variant="caption"
                   sx={{
                     color: ruleStatus.hasSpecialChar ? 'success.main' : 'error.main',
+                    fontSize: '0.72rem',
                   }}
                 >
                   Al menos un carácter especial
@@ -364,6 +406,21 @@ export default function ResetPasswordPage(props: { disableCustomTheme?: boolean 
           </Box>
         </Card>
       </SignInContainer>
+      <Snackbar
+        open={toastOpen}
+        autoHideDuration={toastDuration}
+        onClose={handleToastClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={handleToastClose}
+          severity={toastSeverity}
+          variant="filled"
+          sx={{ width: '100%', backgroundColor: toastBackground }}
+        >
+          {toastMessage}
+        </Alert>
+      </Snackbar>
     </>
   );
 }
