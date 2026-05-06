@@ -74,20 +74,55 @@ export default function SignIn() {
   const [showPassword, setShowPassword] = React.useState(false);
   const [toastOpen, setToastOpen] = React.useState(false);
   const [toastMessage, setToastMessage] = React.useState('');
+  const [toastSeverity, setToastSeverity] = React.useState<'success' | 'warning' | 'error'>('error');
+
+  const toastDuration = toastSeverity === 'success' ? 3000 : 4000;
+  const toastBackground =
+    toastSeverity === 'success'
+      ? '#2e7d32'
+      : toastSeverity === 'warning'
+      ? '#ed6c02'
+      : '#d32f2f';
+
+  const showToast = React.useCallback(
+    (message: string, severity: 'success' | 'warning' | 'error') => {
+      setToastMessage(message);
+      setToastSeverity(severity);
+      setToastOpen(true);
+    },
+    []
+  );
 
   // Redirigir si ya está autenticado
   React.useEffect(() => {
     if (isAuthenticated) {
+      showToast('¡Bienvenido de vuelta!', 'success');
       navigate('/dashboard');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, showToast]);
 
   React.useEffect(() => {
-    if (error) {
-      setToastMessage(error.message || 'Error al iniciar sesión');
-      setToastOpen(true);
+    if (!error?.message) {
+      return;
     }
-  }, [error]);
+
+    const normalizedMessage = error.message.toLowerCase();
+    const isInvalidCredentials =
+      normalizedMessage.includes('401') ||
+      normalizedMessage.includes('403') ||
+      normalizedMessage.includes('unauthorized') ||
+      normalizedMessage.includes('forbidden') ||
+      normalizedMessage.includes('invalid') ||
+      normalizedMessage.includes('credentials') ||
+      normalizedMessage.includes('credencial');
+
+    if (isInvalidCredentials) {
+      showToast('Credenciales incorrectas. Verifica tu correo y contraseña.', 'error');
+      return;
+    }
+
+    showToast('Ocurrió un error inesperado. Intenta de nuevo.', 'error');
+  }, [error, showToast]);
 
   const handleToastClose = (_: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
@@ -134,19 +169,19 @@ export default function SignIn() {
     if (!emailValue || !emailRegex.test(emailValue)) {
       setEmailError(true);
       if (!firstErrorMessage) {
-        firstErrorMessage = 'Ingresa un correo válido.';
+        firstErrorMessage =
+          'Ingresa un correo con formato válido (ejemplo@dominio.com)';
       }
       isValid = false;
     } else {
       setEmailError(false);
     }
 
-    const passwordLengthValid =
-      passwordValue.length >= 8 && passwordValue.length <= 20;
+    const passwordLengthValid = passwordValue.length >= 8;
     if (!passwordLengthValid) {
       setPasswordError(true);
       if (!firstErrorMessage) {
-        firstErrorMessage = 'La contraseña debe tener entre 8 y 20 caracteres.';
+        firstErrorMessage = 'La contraseña debe tener al menos 8 caracteres.';
       }
       isValid = false;
     } else {
@@ -154,8 +189,7 @@ export default function SignIn() {
     }
 
     if (!isValid && firstErrorMessage) {
-      setToastMessage(firstErrorMessage);
-      setToastOpen(true);
+      showToast(firstErrorMessage, 'error');
     }
 
     return isValid;
@@ -190,7 +224,7 @@ export default function SignIn() {
                 variant="h4"
                 sx={{ fontWeight: 800, color: '#610361' }}
               >
-                Inicia sesión
+                Inicio Sesión
               </Typography>
               
             </Box>
@@ -207,7 +241,7 @@ export default function SignIn() {
               }}
             >
               <FormControl>
-                <FormLabel htmlFor="email">Email</FormLabel>
+                <FormLabel htmlFor="email">Correo Electrónico</FormLabel>
                 <TextField
                   error={emailError}
                   id="email"
@@ -300,11 +334,16 @@ export default function SignIn() {
       </SignInContainer>
       <Snackbar
         open={toastOpen}
-        autoHideDuration={4000}
+        autoHideDuration={toastDuration}
         onClose={handleToastClose}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        <Alert onClose={handleToastClose} severity="error" sx={{ width: '100%' }}>
+        <Alert
+          onClose={handleToastClose}
+          severity={toastSeverity}
+          variant="filled"
+          sx={{ width: '100%', backgroundColor: toastBackground }}
+        >
           {toastMessage}
         </Alert>
       </Snackbar>
