@@ -75,19 +75,53 @@ export default function SignUp() {
   const [showPassword, setShowPassword] = React.useState(false);
   const [toastOpen, setToastOpen] = React.useState(false);
   const [toastMessage, setToastMessage] = React.useState('');
+  const [toastSeverity, setToastSeverity] = React.useState<'success' | 'warning' | 'error'>('error');
+
+  const toastDuration = toastSeverity === 'success' ? 3000 : 4000;
+  const toastBackground =
+    toastSeverity === 'success'
+      ? '#2e7d32'
+      : toastSeverity === 'warning'
+      ? '#ed6c02'
+      : '#d32f2f';
+
+  const showToast = React.useCallback(
+    (message: string, severity: 'success' | 'warning' | 'error') => {
+      setToastMessage(message);
+      setToastSeverity(severity);
+      setToastOpen(true);
+    },
+    []
+  );
 
   React.useEffect(() => {
     if (isAuthenticated) {
+      showToast('¡Cuenta creada exitosamente! Bienvenido.', 'success');
       navigate('/dashboard');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, showToast]);
 
   React.useEffect(() => {
-    if (error) {
-      setToastMessage(error.message || 'Error al registrar usuario');
-      setToastOpen(true);
+    if (!error?.message) {
+      return;
     }
-  }, [error]);
+
+    const normalizedMessage = error.message.toLowerCase();
+    const isConflict =
+      normalizedMessage.includes('409') ||
+      normalizedMessage.includes('conflict') ||
+      normalizedMessage.includes('already') ||
+      normalizedMessage.includes('exists') ||
+      normalizedMessage.includes('duplicate') ||
+      normalizedMessage.includes('registrado');
+
+    if (isConflict) {
+      showToast('Este correo ya está registrado. Intenta iniciar sesión.', 'warning');
+      return;
+    }
+
+    showToast('Ocurrió un error inesperado. Intenta de nuevo.', 'error');
+  }, [error, showToast]);
 
   const handleToastClose = (_: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') return;
@@ -122,7 +156,9 @@ export default function SignUp() {
 
     if (!emailValue || !emailRegex.test(emailValue)) {
       setEmailError(true);
-      if (!firstErrorMessage) firstErrorMessage = 'Ingresa un correo válido.';
+      if (!firstErrorMessage)
+        firstErrorMessage =
+          'Ingresa un correo con formato válido (ejemplo@dominio.com)';
       isValid = false;
     } else {
       setEmailError(false);
@@ -130,26 +166,26 @@ export default function SignUp() {
 
     if (!phoneValue || !phoneRegex.test(phoneValue)) {
       setPhoneError(true);
-      if (!firstErrorMessage) firstErrorMessage = 'El teléfono debe tener 10 dígitos.';
+      if (!firstErrorMessage) firstErrorMessage = 'El teléfono debe tener exactamente 10 dígitos.';
       isValid = false;
     } else {
       setPhoneError(false);
     }
 
-    const passwordLengthValid = passwordValue.length >= 8 && passwordValue.length <= 20;
+    const passwordLengthValid = passwordValue.length >= 8;
     const passwordFormatValid = passwordRegex.test(passwordValue);
     if (!passwordLengthValid || !passwordFormatValid) {
       setPasswordError(true);
       if (!firstErrorMessage)
-        firstErrorMessage = 'La contraseña debe tener mayúscula, número y carácter especial.';
+        firstErrorMessage =
+          'La contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un carácter especial.';
       isValid = false;
     } else {
       setPasswordError(false);
     }
 
     if (!isValid && firstErrorMessage) {
-      setToastMessage(firstErrorMessage);
-      setToastOpen(true);
+      showToast(firstErrorMessage, 'error');
     }
 
     return isValid;
@@ -219,7 +255,7 @@ export default function SignUp() {
                 Regístrate
               </Typography>
               <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Completa tus datos para empezar.
+                Completa tus datos para empezar a administrar.
               </Typography>
             </Box>
 
@@ -256,7 +292,7 @@ export default function SignUp() {
 
               <FormControl>
                 <FormLabel htmlFor="email" sx={{ fontSize: '0.78rem', mb: 0.3 }}>
-                  Email
+                  Correo Electrónico
                 </FormLabel>
                 <TextField
                   required
@@ -451,11 +487,16 @@ export default function SignUp() {
 
       <Snackbar
         open={toastOpen}
-        autoHideDuration={4000}
+        autoHideDuration={toastDuration}
         onClose={handleToastClose}
         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        <Alert onClose={handleToastClose} severity="error" sx={{ width: '100%' }}>
+        <Alert
+          onClose={handleToastClose}
+          severity={toastSeverity}
+          variant="filled"
+          sx={{ width: '100%', backgroundColor: toastBackground }}
+        >
           {toastMessage}
         </Alert>
       </Snackbar>
