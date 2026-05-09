@@ -7,6 +7,7 @@ import { Outlet } from 'react-router';
 import DashboardHeader from './DashboardHeader';
 import DashboardSidebar from './DashboardSidebar';
 import SitemarkIcon from './SitemarkIcon';
+import { HEADER_HEIGHT } from '../constants';
 
 export default function DashboardLayout() {
   const theme = useTheme();
@@ -58,7 +59,7 @@ export default function DashboardLayout() {
       }}
     >
       <DashboardHeader
-        logo={<img src="src\assets\logoPag.png" alt="Sitemark Logo" style={{ height: 31, width: 120, marginRight: 16 }} />}
+        logo={<img src="src\assets\logoPag.png" alt="Sitemark Logo" style={{ height: 80, width: 220, marginRight: 16 }} />}
         title=""
         menuOpen={isNavigationExpanded}
         onToggleMenu={handleToggleHeaderMenu}
@@ -76,7 +77,13 @@ export default function DashboardLayout() {
           minWidth: 0,
         }}
       >
-        <Toolbar sx={{ displayPrint: 'none' }} />
+        <Toolbar
+          sx={{
+            displayPrint: 'none',
+            minHeight: HEADER_HEIGHT,
+            height: HEADER_HEIGHT,
+          }}
+        />
         <Box
           component="main"
           sx={{

@@ -18,6 +18,7 @@ export default function DashboardSidebarDividerItem() {
           borderBottomWidth: 1,
           my: 1,
           mx: -0.5,
+          borderColor: 'rgba(255, 255, 255, 0.18)',
           ...(hasDrawerTransitions
             ? getDrawerSxTransitionMixin(fullyExpanded, 'margin')
             : {}),

@@ -33,9 +33,10 @@ export default function KpiCard({
       sx={{
         height: '100%',
         borderRadius: 3,
+        border: '1px solid #f0d6fb',
         borderLeft: '4px solid',
-        borderColor: accentColor,
-        boxShadow: '0 10px 24px rgba(0, 0, 0, 0.08)',
+        borderLeftColor: accentColor,
+        boxShadow: '0 8px 18px -12px rgba(97, 3, 97, 0.35)',
         background: 'linear-gradient(145deg, #ffffff 0%, #faf5ff 100%)',
         fontFamily: "'Winky Sans', sans-serif",
       }}

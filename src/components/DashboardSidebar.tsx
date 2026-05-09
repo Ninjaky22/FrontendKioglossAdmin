@@ -14,7 +14,7 @@ import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { matchPath, useLocation } from 'react-router';
 import DashboardSidebarContext from '../context/DashboardSidebarContext';
-import { DRAWER_WIDTH, MINI_DRAWER_WIDTH } from '../constants';
+import { DRAWER_WIDTH, MINI_DRAWER_WIDTH, HEADER_HEIGHT } from '../constants';
 import DashboardSidebarPageItem from './DashboardSidebarPageItem';
 import DashboardSidebarHeaderItem from './DashboardSidebarHeaderItem';
 import DashboardSidebarDividerItem from './DashboardSidebarDividerItem';
@@ -108,7 +108,7 @@ export default function DashboardSidebar({
   const getDrawerContent = React.useCallback(
     (viewport: 'phone' | 'tablet' | 'desktop') => (
       <React.Fragment>
-        <Toolbar />
+        <Toolbar sx={{ minHeight: HEADER_HEIGHT, height: HEADER_HEIGHT }} />
         <Box
           component="nav"
           aria-label={`${viewport.charAt(0).toUpperCase()}${viewport.slice(1)}`}
@@ -228,7 +228,11 @@ export default function DashboardSidebar({
           position: 'absolute',
           width: drawerWidth,
           boxSizing: 'border-box',
-          backgroundImage: 'none',
+          backgroundImage:
+            'linear-gradient(180deg, #4a024a 0%, #5d0657 45%, #3a013a 100%)',
+          backgroundColor: '#4a024a',
+          color: '#ffffff',
+          borderRight: '1px solid rgba(255, 255, 255, 0.12)',
           ...getDrawerWidthTransitionMixin(expanded),
         },
       };

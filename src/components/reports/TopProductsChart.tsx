@@ -9,6 +9,16 @@ export interface TopProductsChartProps {
 
 const COLOR_PRIMARY = '#610361';
 const COLOR_SECONDARY = '#9b30a0';
+const COLOR_TERTIARY = '#f2a6dd';
+
+const BRAND_PALETTE = [
+  '#610361',
+  '#9b30a0',
+  '#b83db0',
+  '#d45ac2',
+  '#e97fd0',
+  '#f2a6dd',
+];
 
 const hexToRgb = (hex: string) => {
   const value = hex.replace('#', '');
@@ -38,8 +48,9 @@ const mixColors = (start: string, end: string, ratio: number) => {
 
 const buildColorRamp = (count: number) => {
   if (count <= 1) return [COLOR_PRIMARY];
+  if (count <= BRAND_PALETTE.length) return BRAND_PALETTE.slice(0, count);
   return Array.from({ length: count }, (_, index) =>
-    mixColors(COLOR_PRIMARY, COLOR_SECONDARY, index / (count - 1)),
+    mixColors(COLOR_PRIMARY, COLOR_TERTIARY, index / (count - 1)),
   );
 };
 

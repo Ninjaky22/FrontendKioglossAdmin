@@ -38,6 +38,8 @@ export default function DashboardSidebarHeaderItem({
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
         zIndex: 2,
+        color: 'rgba(255, 255, 255, 0.72)',
+        letterSpacing: '0.04em',
       }}
     >
       {children}

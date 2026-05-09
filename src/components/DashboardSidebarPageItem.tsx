@@ -68,12 +68,14 @@ export default function DashboardSidebarPageItem({
       top: '41.5%',
       right: '2px',
       transform: 'translateY(-50%) rotate(-90deg)',
+      color: '#ffffff',
     };
   } else if (!mini && fullyExpanded) {
     nestedNavigationCollapseSx = {
       ml: 0.5,
       fontSize: 20,
       transform: `rotate(${expanded ? 0 : -90}deg)`,
+      color: '#ffffff',
       transition: (theme: Theme) =>
         theme.transitions.create('transform', {
           easing: theme.transitions.easing.sharp,
@@ -117,6 +119,10 @@ export default function DashboardSidebarPageItem({
           py: 0,
           px: 1,
           overflowX: 'hidden',
+          mb: 0.5,
+          '&:last-of-type': {
+            mb: 0,
+          },
         }}
       >
         <ListItemButton
@@ -124,6 +130,15 @@ export default function DashboardSidebarPageItem({
           disabled={disabled}
           sx={{
             height: mini ? 50 : 'auto',
+            borderRadius: 2,
+            color: '#ffffff',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.12)',
+            },
+            '&.Mui-selected': {
+              backgroundColor: 'rgba(255, 255, 255, 0.18)',
+              '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.22)' },
+            },
           }}
           {...(nestedNavigation && !mini
             ? {
@@ -162,6 +177,7 @@ export default function DashboardSidebarPageItem({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: mini ? 'center' : 'auto',
+                  color: '#ffffff',
                 }}
               >
                 {icon ?? null}
@@ -171,6 +187,8 @@ export default function DashboardSidebarPageItem({
                       fontSize: 10,
                       height: 16,
                       width: 16,
+                      bgcolor: 'rgba(255, 255, 255, 0.2)',
+                      color: '#ffffff',
                     }}
                   >
                     {title
@@ -195,6 +213,7 @@ export default function DashboardSidebarPageItem({
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     maxWidth: MINI_DRAWER_WIDTH - 28,
+                    color: '#ffffff',
                   }}
                 >
                   {title}
@@ -208,6 +227,7 @@ export default function DashboardSidebarPageItem({
               sx={{
                 whiteSpace: 'nowrap',
                 zIndex: 1,
+                color: '#ffffff',
               }}
             />
           ) : null}
@@ -230,6 +250,8 @@ export default function DashboardSidebarPageItem({
                 sx={{
                   pt: 0.2,
                   pb: 0.2,
+                  backgroundColor: '#3f023d',
+                  color: '#ffffff',
                   transform: 'translateY(-50px)',
                 }}
               >

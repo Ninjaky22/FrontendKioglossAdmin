@@ -9,15 +9,33 @@ export interface OrdersDonutChartProps {
 
 const statusLabelMap: Record<string, string> = {
   COMPLETED: 'Completadas',
+  DELIVERED: 'Completadas',
   PENDING: 'Pendientes',
+  PROCESSING: 'Procesando',
+  SHIPPED: 'Enviadas',
   CANCELLED: 'Canceladas',
+  CANCELED: 'Canceladas',
 };
 
 const statusColorMap: Record<string, string> = {
   COMPLETED: '#610361',
+  DELIVERED: '#610361',
   PENDING: '#9b30a0',
-  CANCELLED: '#a21caf',
+  PROCESSING: '#b83db0',
+  SHIPPED: '#d45ac2',
+  CANCELLED: '#d94b8a',
+  CANCELED: '#d94b8a',
 };
+
+const normalizeStatus = (status: string) =>
+  status
+    ? status
+        .normalize('NFD')
+        .replace(/\p{Diacritic}/gu, '')
+        .trim()
+        .toUpperCase()
+        .replace(/\s+/g, '_')
+    : '';
 
 const percentageFormatter = new Intl.NumberFormat('es-CO', {
   minimumFractionDigits: 0,
@@ -26,13 +44,20 @@ const percentageFormatter = new Intl.NumberFormat('es-CO', {
 
 export default function OrdersDonutChart({ data }: OrdersDonutChartProps) {
   const labels = React.useMemo(
-    () => data.map((item) => statusLabelMap[item.status] ?? item.status),
+    () =>
+      data.map((item) => {
+        const key = normalizeStatus(item.status);
+        return statusLabelMap[key] ?? item.status;
+      }),
     [data],
   );
 
   const colors = React.useMemo(
     () =>
-      data.map((item) => statusColorMap[item.status] ?? 'var(--color-primary)'),
+      data.map((item) => {
+        const key = normalizeStatus(item.status);
+        return statusColorMap[key] ?? '#8b5cf6';
+      }),
     [data],
   );
 
@@ -96,7 +121,7 @@ export default function OrdersDonutChart({ data }: OrdersDonutChartProps) {
       custom: ({ seriesIndex }: { seriesIndex: number }) => {
         const point = data[seriesIndex];
         if (!point) return '';
-        const label = statusLabelMap[point.status] ?? point.status;
+        const label = statusLabelMap[normalizeStatus(point.status)] ?? point.status;
         return `
           <div style="padding: 10px 12px; font-family: 'Winky Sans', sans-serif;">
             <div style="font-weight: 600; margin-bottom: 4px; color: #111827;">${label}</div>

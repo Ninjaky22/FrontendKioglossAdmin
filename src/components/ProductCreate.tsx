@@ -14,6 +14,7 @@ import { AccionesTag } from '../store/actions/tag';
 import { AccionesVariant } from '../store/actions/variant';
 import { listaTagsSelector } from '../store/selectors/tag';
 import { listaVariantesSelector } from '../store/selectors/variant';
+import { ThemeProvider, createTheme, useTheme } from '@mui/material/styles';
 
 const generateSlug = (title: string): string => {
   return title
@@ -59,6 +60,73 @@ export default function ProductCreate() {
   const navigate = useNavigate();
   const dispatch = useDispatch<any>();
   const notifications = useNotifications();
+  const parentTheme = useTheme();
+
+  const localTheme = React.useMemo(
+    () =>
+      createTheme(parentTheme, {
+        components: {
+          MuiOutlinedInput: {
+            styleOverrides: {
+              root: {
+                borderRadius: '12px',
+                backgroundColor: '#fdf4ff',
+                outline: 'none',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  border: 'none',
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  border: 'none',
+                },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  border: 'none',
+                },
+                '&.Mui-focused': { boxShadow: 'none' },
+                '&:focus': { outline: 'none' },
+              },
+            },
+          },
+          MuiSelect: {
+            styleOverrides: {
+              select: {
+                '&:focus': {
+                  backgroundColor: 'transparent',
+                  outline: 'none',
+                },
+              },
+            },
+            defaultProps: {
+              MenuProps: {
+                PaperProps: {
+                  sx: {
+                    borderRadius: '12px',
+                    border: '1px solid #f0d6fb',
+                    boxShadow: '0 10px 40px -10px rgba(155, 48, 160, 0.1)',
+                    mt: 1,
+                    '& .MuiMenuItem-root': {
+                      borderRadius: '8px',
+                      mx: 1,
+                      mb: 0.5,
+                      padding: '8px 12px',
+                      outline: 'none',
+                      '&:focus, &:focus-visible': { outline: 'none' },
+                      '&:hover': { backgroundColor: '#fdf4ff' },
+                      '&.Mui-selected': {
+                        backgroundColor: '#fce4ff',
+                        color: '#610361',
+                        fontWeight: 600,
+                        '&:hover': { backgroundColor: '#f0d6fb' },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      }),
+    [parentTheme]
+  );
 
   // Cargar datos necesarios para el formulario
   const tags = useSelector(listaTagsSelector) || [];
@@ -143,18 +211,20 @@ React.useEffect(() => {
   }, [formState.values, navigate, notifications, dispatch]);
 
   return (
-    <PageContainer
-      title="Nuevo Producto"
-      breadcrumbs={[{ title: 'Productos', path: '/products' }, { title: 'Nuevo' }]}
-    >
-      <ProductForm
-        formState={formState}
-        onFieldChange={handleFormFieldChange}
-        onSubmit={handleFormSubmit}
-        submitButtonLabel="Crear"
-        variantTypes={variantTypes}
-        tags={tags}
-      />
-    </PageContainer>
+    <ThemeProvider theme={localTheme}>
+      <PageContainer
+        title="Nuevo Producto"
+        breadcrumbs={[{ title: 'Productos', path: '/products' }, { title: 'Nuevo' }]}
+      >
+        <ProductForm
+          formState={formState}
+          onFieldChange={handleFormFieldChange}
+          onSubmit={handleFormSubmit}
+          submitButtonLabel="Crear"
+          variantTypes={variantTypes}
+          tags={tags}
+        />
+      </PageContainer>
+    </ThemeProvider>
   );
 }

@@ -15,6 +15,7 @@ import Button from '@mui/material/Button';
 import { getToken } from '../utils/tokenManagement';
 import { CerrarSesion } from '../store/actions/session';
 import { useDispatch } from 'react-redux';
+import { HEADER_HEIGHT } from '../constants';
 
 const AppBar = styled(MuiAppBar)(({ theme }) => ({
   borderWidth: 0,
@@ -27,11 +28,11 @@ const AppBar = styled(MuiAppBar)(({ theme }) => ({
 
 const LogoContainer = styled('div')({
   position: 'relative',
-  height: 40,
+  height: HEADER_HEIGHT,
   display: 'flex',
   alignItems: 'center',
   '& img': {
-    maxHeight: 40,
+    maxHeight: HEADER_HEIGHT,
   },
 });
 
@@ -82,8 +83,31 @@ export default function DashboardHeader({
   );
 
   return (
-    <AppBar color="inherit" position="absolute" sx={{ displayPrint: 'none' }}>
-      <Toolbar sx={{ backgroundColor: 'inherit', mx: { xs: -0.75, sm: -1 } }}>
+    <AppBar
+      color="inherit"
+      position="absolute"
+      sx={{
+        displayPrint: 'none',
+        background: 'linear-gradient(135deg, #4a024a 0%, #610361 45%, #8b0d6f 100%)',
+        color: '#ffffff',
+        borderBottomColor: 'rgba(255, 255, 255, 0.18)',
+        boxShadow: '0 6px 18px rgba(35, 0, 42, 0.35)',
+        '& .MuiIconButton-root': {
+          color: '#ffffff',
+          '&:hover': {
+            backgroundColor: 'rgba(255, 255, 255, 0.12)',
+          },
+        },
+      }}
+    >
+      <Toolbar
+        sx={{
+          backgroundColor: 'transparent',
+          mx: { xs: -0.75, sm: -1 },
+          minHeight: HEADER_HEIGHT,
+          height: HEADER_HEIGHT,
+        }}
+      >
         <Stack
           direction="row"
           justifyContent="space-between"
@@ -102,7 +126,7 @@ export default function DashboardHeader({
                   <Typography
                     variant="h6"
                     sx={{
-                      color: (theme.vars ?? theme).palette.primary.main,
+                      color: '#ffffff',
                       fontWeight: '700',
                       ml: 1,
                       whiteSpace: 'nowrap',
@@ -121,15 +145,35 @@ export default function DashboardHeader({
             spacing={1}
             sx={{ marginLeft: 'auto' }}
           >
-            <Stack direction="row" alignItems="center">
+            <Stack
+              direction="row"
+              alignItems="center"
+              sx={{ color: '#ffffff' }}
+            >
               <ThemeSwitcher />
             </Stack>
-            {getToken() && <Button onClick={() => {
-              dispatch(CerrarSesion())
-              navegate("/log-in")
-              }} variant="contained" sx={{ my: 1, mx: 1.5 }}>
-              Cerrar Sesion
-          </Button>}
+            {getToken() && (
+              <Button
+                onClick={() => {
+                  dispatch(CerrarSesion());
+                  navegate('/log-in');
+                }}
+                variant="contained"
+                sx={{
+                  my: 1,
+                  mx: 1.5,
+                  backgroundColor: '#ffffff',
+                  color: '#4a024a',
+                  fontWeight: 700,
+                  textTransform: 'none',
+                  '&:hover': {
+                    backgroundColor: '#f6e9f6',
+                  },
+                }}
+              >
+                Cerrar Sesion
+              </Button>
+            )}
           </Stack>
         </Stack>
       </Toolbar>
