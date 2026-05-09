@@ -7,7 +7,7 @@ import {
 } from '@mui/x-data-grid';
 import { Alert, Box, IconButton, Stack, Tooltip, Chip, Paper, Typography, Button } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import EditIcon from '@mui/icons-material/Edit';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import Inventory2Icon from '@mui/icons-material/Inventory2';
@@ -66,7 +66,7 @@ export default function ProductList() {
   };
 
   const handleCreateClick = () => navigate('/products/new');
-  const handleEditClick = (id: string) => () => navigate(`/products/${id}/edit`);
+  const handleViewClick = (id: string) => () => navigate(`/products/${id}`);
 
   const handleDeleteClick = (product: any) => async () => {
     const confirmed = await dialogs.confirm(`¿Deseas eliminar "${product.name}"?`, {
@@ -198,10 +198,10 @@ export default function ProductList() {
       headerAlign: 'center',
       getActions: ({ row }) => [
         <GridActionsCellItem
-          key="edit"
-          icon={<EditIcon fontSize="small" sx={{ color: '#9b30a0' }} />}
-          label="Editar"
-          onClick={handleEditClick(row.id)}
+          key="view"
+          icon={<VisibilityIcon fontSize="small" sx={{ color: '#9b30a0' }} />}
+          label="Ver"
+          onClick={handleViewClick(row.id)}
         />,
         <GridActionsCellItem
           key="delete"

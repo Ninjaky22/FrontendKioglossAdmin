@@ -19,6 +19,7 @@ import ProductForm, {
 import PageContainer from './PageContainer';
 import type { UpdateProductRequest } from '../models/Product';
 import httpClient from '../services/httpClient';
+import { ThemeProvider, createTheme, useTheme } from '@mui/material/styles';
 
 const generateSlug = (title: string): string => {
   return title
@@ -151,6 +152,73 @@ function ProductEditForm({
 export default function ProductEdit() {
   const { productId } = useParams();
   const dispatch = useDispatch<any>();
+  const parentTheme = useTheme();
+
+  const localTheme = React.useMemo(
+    () =>
+      createTheme(parentTheme, {
+        components: {
+          MuiOutlinedInput: {
+            styleOverrides: {
+              root: {
+                borderRadius: '12px',
+                backgroundColor: '#fdf4ff',
+                outline: 'none',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  border: 'none',
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  border: 'none',
+                },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  border: 'none',
+                },
+                '&.Mui-focused': { boxShadow: 'none' },
+                '&:focus': { outline: 'none' },
+              },
+            },
+          },
+          MuiSelect: {
+            styleOverrides: {
+              select: {
+                '&:focus': {
+                  backgroundColor: 'transparent',
+                  outline: 'none',
+                },
+              },
+            },
+            defaultProps: {
+              MenuProps: {
+                PaperProps: {
+                  sx: {
+                    borderRadius: '12px',
+                    border: '1px solid #f0d6fb',
+                    boxShadow: '0 10px 40px -10px rgba(155, 48, 160, 0.1)',
+                    mt: 1,
+                    '& .MuiMenuItem-root': {
+                      borderRadius: '8px',
+                      mx: 1,
+                      mb: 0.5,
+                      padding: '8px 12px',
+                      outline: 'none',
+                      '&:focus, &:focus-visible': { outline: 'none' },
+                      '&:hover': { backgroundColor: '#fdf4ff' },
+                      '&.Mui-selected': {
+                        backgroundColor: '#fce4ff',
+                        color: '#610361',
+                        fontWeight: 600,
+                        '&:hover': { backgroundColor: '#f0d6fb' },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      }),
+    [parentTheme]
+  );
 
   const product = useSelector(productoActualSelector);
   const isLoading = useSelector(obtenerProductoEnProgresoSelector);
@@ -266,15 +334,17 @@ export default function ProductEdit() {
   }, [isLoading, error, product, handleSubmit, variantTypes, tags]);
 
   return (
-    <PageContainer
-      title={`Editar Producto ${productId}`}
-      breadcrumbs={[
-        { title: 'Productos', path: '/products' },
-        { title: `Producto ${productId}`, path: `/products/${productId}` },
-        { title: 'Editar' },
-      ]}
-    >
-      <Box sx={{ display: 'flex', flex: 1 }}>{renderEdit}</Box>
-    </PageContainer>
+    <ThemeProvider theme={localTheme}>
+      <PageContainer
+        title={`Editar Producto ${productId}`}
+        breadcrumbs={[
+          { title: 'Productos', path: '/products' },
+          { title: `Producto ${productId}`, path: `/products/${productId}` },
+          { title: 'Editar' },
+        ]}
+      >
+        <Box sx={{ display: 'flex', flex: 1 }}>{renderEdit}</Box>
+      </PageContainer>
+    </ThemeProvider>
   );
 }

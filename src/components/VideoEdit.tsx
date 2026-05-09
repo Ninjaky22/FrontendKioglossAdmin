@@ -14,6 +14,7 @@ import PageContainer from './PageContainer';
 import type { UpdateVideoRequest } from '../models/VideoReel';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
+import { ThemeProvider, createTheme, useTheme } from '@mui/material/styles';
 
 const validateVideo = (values: Partial<UpdateVideoRequest & { productId: number }>) => {
   const errors: Partial<Record<string, string>> = {};
@@ -34,6 +35,73 @@ export default function VideoEdit() {
   const navigate = useNavigate();
   const dispatch = useDispatch<any>();
   const notifications = useNotifications();
+  const parentTheme = useTheme();
+
+  const localTheme = React.useMemo(
+    () =>
+      createTheme(parentTheme, {
+        components: {
+          MuiOutlinedInput: {
+            styleOverrides: {
+              root: {
+                borderRadius: '12px',
+                backgroundColor: '#fdf4ff',
+                outline: 'none',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  border: 'none',
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  border: 'none',
+                },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  border: 'none',
+                },
+                '&.Mui-focused': { boxShadow: 'none' },
+                '&:focus': { outline: 'none' },
+              },
+            },
+          },
+          MuiSelect: {
+            styleOverrides: {
+              select: {
+                '&:focus': {
+                  backgroundColor: 'transparent',
+                  outline: 'none',
+                },
+              },
+            },
+            defaultProps: {
+              MenuProps: {
+                PaperProps: {
+                  sx: {
+                    borderRadius: '12px',
+                    border: '1px solid #f0d6fb',
+                    boxShadow: '0 10px 40px -10px rgba(155, 48, 160, 0.1)',
+                    mt: 1,
+                    '& .MuiMenuItem-root': {
+                      borderRadius: '8px',
+                      mx: 1,
+                      mb: 0.5,
+                      padding: '8px 12px',
+                      outline: 'none',
+                      '&:focus, &:focus-visible': { outline: 'none' },
+                      '&:hover': { backgroundColor: '#fdf4ff' },
+                      '&.Mui-selected': {
+                        backgroundColor: '#fce4ff',
+                        color: '#610361',
+                        fontWeight: 600,
+                        '&:hover': { backgroundColor: '#f0d6fb' },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      }),
+    [parentTheme]
+  );
 
   const video = useSelector(videoActualSelector);
   const isLoadingVideo = useSelector(obtenerVideoEnProgresoSelector);
@@ -112,30 +180,34 @@ export default function VideoEdit() {
 
   if (isLoadingVideo || !video) {
     return (
-      <PageContainer
-        title="Editar Video"
-        breadcrumbs={[{ title: 'Videos', path: '/videos' }, { title: 'Editar' }]}
-      >
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-          <CircularProgress />
-        </Box>
-      </PageContainer>
+      <ThemeProvider theme={localTheme}>
+        <PageContainer
+          title="Editar Video"
+          breadcrumbs={[{ title: 'Videos', path: '/videos' }, { title: 'Editar' }]}
+        >
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+            <CircularProgress />
+          </Box>
+        </PageContainer>
+      </ThemeProvider>
     );
   }
 
   return (
-    <PageContainer
-      title="Editar Video"
-      breadcrumbs={[{ title: 'Videos', path: '/videos' }, { title: 'Editar' }]}
-    >
-      <VideoForm
-        formState={formState}
-        onFieldChange={handleFormFieldChange}
-        onSubmit={handleFormSubmit}
-        onReset={handleFormReset}
-        submitButtonLabel="Actualizar"
-        products={products}
-      />
-    </PageContainer>
+    <ThemeProvider theme={localTheme}>
+      <PageContainer
+        title="Editar Video"
+        breadcrumbs={[{ title: 'Videos', path: '/videos' }, { title: 'Editar' }]}
+      >
+        <VideoForm
+          formState={formState}
+          onFieldChange={handleFormFieldChange}
+          onSubmit={handleFormSubmit}
+          onReset={handleFormReset}
+          submitButtonLabel="Actualizar"
+          products={products}
+        />
+      </PageContainer>
+    </ThemeProvider>
   );
 }

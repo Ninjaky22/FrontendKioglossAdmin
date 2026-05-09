@@ -77,7 +77,7 @@ const VariantBuilder = React.memo(({ initialVariants, variantTypes, productImage
       });
     });
     if (ids.size > 0) setSelectedTypeIds(Array.from(ids));
-  }, [variantTypes]);
+  }, [variantTypes, variants, selectedTypeIds]);
 
   const activeTypes = React.useMemo(
     () => variantTypes.filter(vt => selectedTypeIds.includes(vt.id)),

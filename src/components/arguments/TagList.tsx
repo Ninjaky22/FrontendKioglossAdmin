@@ -15,6 +15,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import LabelIcon from '@mui/icons-material/Label';
+import { ThemeProvider, createTheme, useTheme } from '@mui/material/styles';
 import {
   DataGrid,
   GridActionsCellItem,
@@ -48,6 +49,73 @@ export default function TagList() {
   const dispatch = useDispatch<any>();
   const dialogs = useDialogs();
   const notifications = useNotifications();
+  const parentTheme = useTheme();
+
+  const localTheme = React.useMemo(
+    () =>
+      createTheme(parentTheme, {
+        components: {
+          MuiOutlinedInput: {
+            styleOverrides: {
+              root: {
+                borderRadius: '12px',
+                backgroundColor: '#fdf4ff',
+                outline: 'none',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  border: 'none',
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  border: 'none',
+                },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  border: 'none',
+                },
+                '&.Mui-focused': { boxShadow: 'none' },
+                '&:focus': { outline: 'none' },
+              },
+            },
+          },
+          MuiSelect: {
+            styleOverrides: {
+              select: {
+                '&:focus': {
+                  backgroundColor: 'transparent',
+                  outline: 'none',
+                },
+              },
+            },
+            defaultProps: {
+              MenuProps: {
+                PaperProps: {
+                  sx: {
+                    borderRadius: '12px',
+                    border: '1px solid #f0d6fb',
+                    boxShadow: '0 10px 40px -10px rgba(155, 48, 160, 0.1)',
+                    mt: 1,
+                    '& .MuiMenuItem-root': {
+                      borderRadius: '8px',
+                      mx: 1,
+                      mb: 0.5,
+                      padding: '8px 12px',
+                      outline: 'none',
+                      '&:focus, &:focus-visible': { outline: 'none' },
+                      '&:hover': { backgroundColor: '#fdf4ff' },
+                      '&.Mui-selected': {
+                        backgroundColor: '#fce4ff',
+                        color: '#610361',
+                        fontWeight: 600,
+                        '&:hover': { backgroundColor: '#f0d6fb' },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      }),
+    [parentTheme]
+  );
 
   const tags = useSelector(listaTagsSelector);
   const isLoading = useSelector(obtenerTagsEnProgresoSelector);
@@ -224,7 +292,8 @@ export default function TagList() {
   );
 
   return (
-    <PageContainer title="Categorías" breadcrumbs={[{ title: 'Categorías' }]}>
+    <ThemeProvider theme={localTheme}>
+      <PageContainer title="Categorías" breadcrumbs={[{ title: 'Categorías' }]}>
       <Paper 
         elevation={0} 
         sx={{ 
@@ -414,6 +483,7 @@ export default function TagList() {
           </DialogActions>
         </form>
       </Dialog>
-    </PageContainer>
+      </PageContainer>
+    </ThemeProvider>
   );
 }

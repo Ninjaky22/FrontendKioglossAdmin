@@ -19,6 +19,7 @@ import {
   Select,
   MenuItem,
 } from '@mui/material';
+import { ThemeProvider, createTheme, useTheme } from '@mui/material/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
@@ -36,6 +37,73 @@ import PageContainer from '../PageContainer';
 export default function VariantTypeList() {
   const dispatch = useDispatch<any>();
   const notifications = useNotifications();
+  const parentTheme = useTheme();
+
+  const localTheme = React.useMemo(
+    () =>
+      createTheme(parentTheme, {
+        components: {
+          MuiOutlinedInput: {
+            styleOverrides: {
+              root: {
+                borderRadius: '12px',
+                backgroundColor: '#fdf4ff',
+                outline: 'none',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  border: 'none',
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  border: 'none',
+                },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  border: 'none',
+                },
+                '&.Mui-focused': { boxShadow: 'none' },
+                '&:focus': { outline: 'none' },
+              },
+            },
+          },
+          MuiSelect: {
+            styleOverrides: {
+              select: {
+                '&:focus': {
+                  backgroundColor: 'transparent',
+                  outline: 'none',
+                },
+              },
+            },
+            defaultProps: {
+              MenuProps: {
+                PaperProps: {
+                  sx: {
+                    borderRadius: '12px',
+                    border: '1px solid #f0d6fb',
+                    boxShadow: '0 10px 40px -10px rgba(155, 48, 160, 0.1)',
+                    mt: 1,
+                    '& .MuiMenuItem-root': {
+                      borderRadius: '8px',
+                      mx: 1,
+                      mb: 0.5,
+                      padding: '8px 12px',
+                      outline: 'none',
+                      '&:focus, &:focus-visible': { outline: 'none' },
+                      '&:hover': { backgroundColor: '#fdf4ff' },
+                      '&.Mui-selected': {
+                        backgroundColor: '#fce4ff',
+                        color: '#610361',
+                        fontWeight: 600,
+                        '&:hover': { backgroundColor: '#f0d6fb' },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      }),
+    [parentTheme]
+  );
 
   const variantes = useSelector(listaVariantesSelector);
   const isLoading = useSelector(obtenerVariantesEnProgresoSelector);
@@ -123,15 +191,16 @@ export default function VariantTypeList() {
   };
 
   return (
-    <PageContainer
-      title="Tipos de Variantes"
-      breadcrumbs={[{ title: 'Catálogo' }, { title: 'Variantes' }]}
-      actions={
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()}>
-          Nuevo Tipo
-        </Button>
-      }
-    >
+    <ThemeProvider theme={localTheme}>
+      <PageContainer
+        title="Tipos de Variantes"
+        breadcrumbs={[{ title: 'Catálogo' }, { title: 'Variantes' }]}
+        actions={
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()}>
+            Nuevo Tipo
+          </Button>
+        }
+      >
       <Box sx={{ width: '100%', mt: 2 }}>
         {isLoading ? (
           <Box display="flex" justifyContent="center" p={4}><CircularProgress /></Box>
@@ -224,6 +293,7 @@ export default function VariantTypeList() {
           </Button>
         </DialogActions>
       </Dialog>
-    </PageContainer>
+      </PageContainer>
+    </ThemeProvider>
   );
 }

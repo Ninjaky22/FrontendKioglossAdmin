@@ -185,7 +185,15 @@ export default function ProductShow() {
               <Box 
                 className="quill-content"
                 dangerouslySetInnerHTML={{ __html: product.description || '' }}
-                sx={{ mb: 1, '& img': { maxWidth: '100%', height: 'auto' } }}
+                sx={{
+                  mb: 1,
+                  maxWidth: '100%',
+                  overflowX: 'hidden',
+                  overflowWrap: 'anywhere',
+                  wordBreak: 'break-word',
+                  '& img': { maxWidth: '100%', height: 'auto' },
+                  '& table': { maxWidth: '100%', display: 'block', overflowX: 'auto' },
+                }}
               />
             </Paper>
           </Grid>

@@ -68,6 +68,32 @@ const STATUS_VARIANTS: Record<string, { canonical: keyof typeof STATUS_CONFIG; l
   CANCELADOS: { canonical: 'CANCELLED', label: 'Cancelados' },
 };
 
+const menuPropsStyles = {
+  PaperProps: {
+    sx: {
+      borderRadius: '12px',
+      border: '1px solid #f0d6fb',
+      boxShadow: '0 10px 40px -10px rgba(155, 48, 160, 0.1)',
+      mt: 1,
+      '& .MuiMenuItem-root': {
+        borderRadius: '8px',
+        mx: 1,
+        mb: 0.5,
+        padding: '8px 12px',
+        outline: 'none',
+        '&:focus, &:focus-visible': { outline: 'none' },
+        '&:hover': { backgroundColor: '#fdf4ff' },
+        '&.Mui-selected': {
+          backgroundColor: '#fce4ff',
+          color: '#610361',
+          fontWeight: 600,
+          '&:hover': { backgroundColor: '#f0d6fb' },
+        },
+      },
+    },
+  },
+};
+
 const normalizeStatus = (status: string) =>
   status
     ? status
@@ -316,34 +342,63 @@ export default function OrderList() {
             <FormControl size="small" sx={{ minWidth: 220 }}>
   <InputLabel sx={{ color: '#9b30a0' }}>Filtrar por Estado</InputLabel>
   <Select 
-    value={statusFilter} 
-    label="Filtrar por Estado" 
-    onChange={handleStatusFilterChange}
-    sx={{ 
-      borderRadius: '12px', 
-      backgroundColor: '#fdf4ff',
-      '& .MuiSelect-select': { display: 'flex', alignItems: 'center', gap: 1 } 
-    }}
-  >
-    <MenuItem value="ALL" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-      <InventoryIcon fontSize="small" sx={{ color: '#9b30a0' }} /> Todos los pedidos
-    </MenuItem>
-    <MenuItem value="PENDING" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-      <TimerIcon fontSize="small" sx={{ color: '#af5f00' }} /> Pendientes
-    </MenuItem>
-    <MenuItem value="PROCESSING" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-      <SettingsIcon fontSize="small" sx={{ color: '#9b30a0' }} /> En Proceso
-    </MenuItem>
-    <MenuItem value="SHIPPED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-      <LocalShippingIcon fontSize="small" sx={{ color: '#0070f3' }} /> Enviados
-    </MenuItem>
-    <MenuItem value="DELIVERED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-      <CheckCircleIcon fontSize="small" sx={{ color: '#008a00' }} /> Entregados
-    </MenuItem>
-    <MenuItem value="CANCELLED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-      <CancelIcon fontSize="small" sx={{ color: '#d32f2f' }} /> Cancelados
-    </MenuItem>
-  </Select>
+  value={statusFilter}
+  label="Filtrar por Estado"
+  onChange={handleStatusFilterChange}
+  MenuProps={menuPropsStyles}
+  sx={{ 
+    borderRadius: '12px', 
+    backgroundColor: '#fdf4ff',
+    
+    // ELIMINACIÓN TOTAL DE BORDES
+    '& .MuiOutlinedInput-notchedOutline': {
+      border: 'none', // Quita el borde base
+    },
+    '&:hover .MuiOutlinedInput-notchedOutline': {
+      border: 'none', // Quita el borde al pasar el mouse
+    },
+    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      border: 'none', // Quita el borde cuando está seleccionado
+    },
+
+    // LIMPIEZA DE CONTORNOS (OUTLINES)
+    '&.MuiOutlinedInput-root': {
+      outline: 'none',
+      '&:focus': {
+        outline: 'none',
+      }
+    },
+    
+    '& .MuiSelect-select': { 
+      display: 'flex', 
+      alignItems: 'center', 
+      gap: 1,
+      '&:focus': {
+        backgroundColor: 'transparent', // Evita el fondo gris al hacer clic
+        outline: 'none',
+      }
+    }
+  }}
+>
+  <MenuItem value="ALL" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <InventoryIcon fontSize="small" sx={{ color: '#9b30a0' }} /> Todos los pedidos
+  </MenuItem>
+  <MenuItem value="PENDING" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <TimerIcon fontSize="small" sx={{ color: '#af5f00' }} /> Pendientes
+  </MenuItem>
+  <MenuItem value="PROCESSING" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <SettingsIcon fontSize="small" sx={{ color: '#9b30a0' }} /> En Proceso
+  </MenuItem>
+  <MenuItem value="SHIPPED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <LocalShippingIcon fontSize="small" sx={{ color: '#0070f3' }} /> Enviados
+  </MenuItem>
+  <MenuItem value="DELIVERED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <CheckCircleIcon fontSize="small" sx={{ color: '#008a00' }} /> Entregados
+  </MenuItem>
+  <MenuItem value="CANCELLED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <CancelIcon fontSize="small" sx={{ color: '#d32f2f' }} /> Cancelados
+  </MenuItem>
+</Select>
 </FormControl>
 
             <Tooltip title="Refrescar Lista">
