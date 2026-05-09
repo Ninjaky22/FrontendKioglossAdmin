@@ -42,9 +42,11 @@ const obtenerOrders = (page: number = 0, pageSize: number = 10, status?: string)
         });
         if (status && status.trim() && status !== 'ALL') {
             params.append('status', status.trim());
+            params.append('statusOrder', status.trim());
         }
         const { data } = await httpClient.get(ordersUrl, { params });
-        dispatch(obtenerListaOrdersExito(data.data));
+        const listaOrders = data && typeof data === 'object' && 'data' in data ? data.data : data;
+        dispatch(obtenerListaOrdersExito(listaOrders));
     } catch (error) {
         dispatch(obtenerListaOrdersError(JSON.parse(JSON.stringify(error)) as Error));
     }
@@ -55,7 +57,8 @@ const obtenerOrderPorId = (id: number) => async (dispatch: Dispatch) => {
     dispatch(cambiarEstadoDeCargaObtenerOrder(true));
     try {
         const { data } = await httpClient.get(`${ordersUrl}/${id}`);
-        dispatch(obtenerOrderExito(data.data));
+        const order = data && typeof data === 'object' && 'data' in data ? data.data : data;
+        dispatch(obtenerOrderExito(order));
     } catch (error) {
         dispatch(obtenerOrderError(error as Error));
     }
@@ -66,8 +69,9 @@ const actualizarEstadoOrder = (id: number, status: string) => async (dispatch: D
     dispatch(cambiarEstadoDeCargaActualizarEstadoOrder(true));
     try {
         const { data } = await httpClient.patch(`${ordersUrl}/${id}/status?status=${status}`);
-        dispatch(actualizarEstadoOrderExito(data.data));
-        return data.data;
+        const updatedOrder = data && typeof data === 'object' && 'data' in data ? data.data : data;
+        dispatch(actualizarEstadoOrderExito(updatedOrder));
+        return updatedOrder;
     } catch (error) {
         dispatch(actualizarEstadoOrderError(error as Error));
         throw error;

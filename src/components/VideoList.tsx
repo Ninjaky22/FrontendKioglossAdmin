@@ -7,17 +7,19 @@ import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import Chip from '@mui/material/Chip';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
 import {
   DataGrid,
   GridActionsCellItem,
   type GridColDef,
-  gridClasses,
 } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import OndemandVideoIcon from '@mui/icons-material/OndemandVideo';
 import { useNavigate } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { useDialogs } from '../hooks/useDialogs/useDialogs';
@@ -30,6 +32,13 @@ import {
 } from '../store/selectors/video';
 import PageContainer from './PageContainer';
 import type { VideoReel } from '../models/VideoReel';
+
+type PaginationDisplayedRowsParams = {
+  from: number;
+  to: number;
+  count: number;
+  estimated: number | undefined;
+};
 
 export default function VideoList() {
   const navigate = useNavigate();
@@ -96,19 +105,21 @@ export default function VideoList() {
 
   const columns = React.useMemo<GridColDef[]>(
     () => [
-      { field: 'id', headerName: 'ID', width: 80 },
+      { field: 'id', headerName: 'ID', width: 70, align: 'center', headerAlign: 'center' },
       {
         field: 'thumbnailUrl',
-        headerName: 'Miniatura',
-        width: 100,
+        headerName: 'MINIATURA',
+        width: 90,
+        align: 'center',
+        headerAlign: 'center',
         renderCell: (params) => (
-          <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
             {params.value ? (
               <Box
                 component="img"
                 src={params.value}
                 alt="thumb"
-                sx={{ width: 40, height: 56, objectFit: 'cover', borderRadius: 1 }}
+                sx={{ width: 40, height: 56, objectFit: 'cover', borderRadius: '8px', border: '1px solid #f0d6fb' }}
               />
             ) : (
               <PlayArrowIcon color="disabled" />
@@ -116,50 +127,113 @@ export default function VideoList() {
           </Box>
         ),
       },
-      { field: 'username', headerName: 'Usuario', width: 150 },
-      { field: 'productTitle', headerName: 'Producto', width: 200 },
+      {
+        field: 'username',
+        headerName: 'USUARIO',
+        flex: 1,
+        minWidth: 140,
+        align: 'center',
+        headerAlign: 'center',
+        renderCell: (params) => (
+          <Typography variant="body2" sx={{ fontWeight: 600, color: '#333', textAlign: 'center', width: '100%' }}>
+            {params.value}
+          </Typography>
+        ),
+      },
+      {
+        field: 'productTitle',
+        headerName: 'PRODUCTO',
+        flex: 2,
+        minWidth: 180,
+        align: 'center',
+        headerAlign: 'center',
+        renderCell: (params) => (
+          <Typography variant="body2" sx={{ color: '#666', textAlign: 'center', width: '100%' }}>
+            {params.value}
+          </Typography>
+        ),
+      },
       {
         field: 'productPrice',
-        headerName: 'Precio',
-        width: 120,
-        valueFormatter: (value) => value ? `$${value}` : '-',
+        headerName: 'PRECIO',
+        width: 110,
+        align: 'center',
+        headerAlign: 'center',
+        renderCell: (params) => (
+          <Typography variant="body2" sx={{ fontWeight: 700, color: '#610361', textAlign: 'center', width: '100%' }}>
+            {params.value ? `$${params.value.toLocaleString('es-CO')}` : '-'}
+          </Typography>
+        ),
       },
       {
         field: 'videoUrl',
-        headerName: 'Video',
-        width: 120,
+        headerName: 'PLATAFORMA',
+        width: 140,
+        align: 'center',
+        headerAlign: 'center',
         renderCell: (params) => {
-          if (!params.value) return <Chip label="Sin video" size="small" color="default" />;
+          if (!params.value) return <Chip label="Sin video" size="small" sx={{ backgroundColor: '#f5f5f5', color: '#9e9e9e', fontWeight: 600 }} />;
           let platform = 'Enlace';
-          if (params.value.includes('youtube') || params.value.includes('youtu.be')) platform = 'YouTube';
-          else if (params.value.includes('tiktok')) platform = 'TikTok';
-          else if (params.value.includes('instagram')) platform = 'Instagram';
-          else if (params.value.includes('facebook')) platform = 'Facebook';
-          else if (/\.(mp4|webm|ogg|mov)/i.test(params.value)) platform = 'MP4';
-          return <Chip label={platform} size="small" color="primary" variant="outlined" />;
+          let bg = '#e3f2fd';
+          let color = '#1976d2';
+          
+          if (params.value.includes('youtube') || params.value.includes('youtu.be')) {
+            platform = 'YouTube'; bg = '#ffebee'; color = '#c62828';
+          } else if (params.value.includes('tiktok')) {
+            platform = 'TikTok'; bg = '#f5f5f5'; color = '#212121';
+          } else if (params.value.includes('instagram')) {
+            platform = 'Instagram'; bg = '#fce4ec'; color = '#c2185b';
+          } else if (params.value.includes('facebook')) {
+            platform = 'Facebook'; bg = '#e8eaf6'; color = '#3f51b5';
+          } else if (/\.(mp4|webm|ogg|mov)/i.test(params.value)) {
+            platform = 'MP4'; bg = '#fdf4ff'; color = '#9b30a0';
+          }
+
+          return (
+            <Chip 
+              label={platform} 
+              size="small" 
+              sx={{
+                backgroundColor: bg,
+                color: color,
+                fontWeight: 700,
+                fontSize: '0.75rem',
+                borderRadius: '12px',
+                border: `1px solid ${color}33`,
+              }} 
+            />
+          );
         },
       },
       {
         field: 'createdAt',
-        headerName: 'Creado',
-        width: 180,
-        valueFormatter: (value) => value ? new Date(value).toLocaleDateString('es') : '-',
+        headerName: 'FECHA CREACIÓN',
+        width: 160,
+        align: 'center',
+        headerAlign: 'center',
+        renderCell: (params) => (
+          <Typography variant="body2" sx={{ color: '#666', fontSize: '0.85rem', textAlign: 'center', width: '100%' }}>
+            {params.value ? new Date(params.value).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' }) : '-'}
+          </Typography>
+        ),
       },
       {
         field: 'actions',
         type: 'actions',
-        flex: 1,
-        align: 'right',
+        headerName: 'ACCIONES',
+        width: 120,
+        align: 'center',
+        headerAlign: 'center',
         getActions: ({ row }) => [
           <GridActionsCellItem
             key="edit"
-            icon={<EditIcon />}
+            icon={<EditIcon fontSize="small" sx={{ color: '#9b30a0' }} />}
             label="Editar"
             onClick={handleRowEdit(row)}
           />,
           <GridActionsCellItem
             key="delete"
-            icon={<DeleteIcon />}
+            icon={<DeleteIcon fontSize="small" sx={{ color: '#d32f2f' }} />}
             label="Eliminar"
             onClick={handleRowDelete(row)}
           />,
@@ -170,49 +244,144 @@ export default function VideoList() {
   );
 
   return (
-    <PageContainer
-      title="Videos"
-      breadcrumbs={[{ title: 'Videos' }]}
-      actions={
-        <Stack direction="row" alignItems="center" spacing={1}>
-          <Tooltip title="Recargar datos">
-            <div>
-              <IconButton size="small" onClick={handleRefresh}>
+    <PageContainer title="Gestión de Videos" breadcrumbs={[{ title: 'Videos' }]}>
+      <Paper 
+        elevation={0} 
+        sx={{ 
+          p: { xs: 2, md: 4 }, 
+          borderRadius: '24px', 
+          border: '1px solid #f0d6fb',
+          boxShadow: '0 10px 40px -10px rgba(155, 48, 160, 0.05)',
+          backgroundColor: '#ffffff',
+          overflow: 'hidden',
+          maxWidth: '100%' 
+        }}
+      >
+        <Stack 
+          direction={{ xs: 'column', sm: 'row' }} 
+          spacing={3} 
+          justifyContent="space-between"
+          alignItems={{ xs: 'stretch', sm: 'center' }}
+          sx={{ mb: 4 }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+             <Box sx={{ 
+                p: 1.5, 
+                borderRadius: 3, 
+                backgroundColor: '#fdf4ff', 
+                color: '#9b30a0',
+                display: { xs: 'none', md: 'flex' }
+             }}>
+                <OndemandVideoIcon />
+             </Box>
+             <Box>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: '#610361', lineHeight: 1.2 }}>
+                   Listado de Videos
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                   Administra los reels y videos asociados a productos
+                </Typography>
+             </Box>
+          </Box>
+
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Tooltip title="Refrescar Lista">
+              <IconButton 
+                onClick={handleRefresh} 
+                sx={{ 
+                  color: '#9b30a0', 
+                  backgroundColor: '#fdf4ff',
+                  borderRadius: '12px',
+                  '&:hover': { backgroundColor: '#fce4ff', color: '#9b30a0' }
+                }}
+              >
                 <RefreshIcon />
               </IconButton>
-            </div>
-          </Tooltip>
-          <Button variant="contained" onClick={handleCreateClick} startIcon={<AddIcon />}>
-            Crear
-          </Button>
+            </Tooltip>
+            <Button 
+              variant="contained" 
+              onClick={handleCreateClick} 
+              startIcon={<AddIcon />}
+              sx={{ 
+                backgroundColor: '#9b30a0', 
+                borderRadius: '12px', 
+                textTransform: 'none', 
+                fontWeight: 700, 
+                '&:hover': { backgroundColor: '#610361' } 
+              }}
+            >
+              Nuevo Video
+            </Button>
+          </Stack>
         </Stack>
-      }
-    >
-      <Box sx={{ flex: 1, width: '100%' }}>
-        {error ? (
-          <Alert severity="error">{error.message}</Alert>
-        ) : (
-          <DataGrid
-            rows={videos || []}
-            columns={columns}
-            loading={isLoading}
-            disableRowSelectionOnClick
-            pageSizeOptions={[10, 25, 50]}
-            initialState={{
-              pagination: { paginationModel: { pageSize: 10 } },
-            }}
-            sx={{
-              [`& .${gridClasses.row}:hover`]: { cursor: 'pointer' },
-            }}
-            slotProps={{
-              loadingOverlay: {
-                variant: 'circular-progress',
-                noRowsVariant: 'circular-progress',
-              },
-            }}
-          />
-        )}
-      </Box>
+
+        <Box sx={{ 
+          width: '100%', 
+          height: { xs: 550, lg: 700 },
+          '& .MuiDataGrid-root': { border: 'none' },
+          '& .MuiDataGrid-columnHeaders': {
+            backgroundColor: '#610361 !important',
+            color: '#ffffff',
+            borderRadius: '12px',
+            borderBottom: 'none',
+            fontWeight: 800,
+            textTransform: 'uppercase',
+            fontSize: '0.75rem',
+          },
+          '& .MuiDataGrid-columnHeader': { backgroundColor: '#610361 !important' },
+          '& .MuiDataGrid-columnHeaderTitle': { color: '#ffffff !important', fontWeight: 800 },
+          '& .MuiDataGrid-columnSeparator': { display: 'block', color: '#ffffff' },
+          '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within, & .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within': { outline: 'none' },
+          '& .MuiDataGrid-row.Mui-selected, & .MuiDataGrid-row.Mui-selected:hover, & .MuiDataGrid-cell.Mui-selected, & .MuiDataGrid-cell.Mui-selected:focus': { backgroundColor: 'transparent' },
+          '& .MuiDataGrid-columnHeader, & .MuiDataGrid-cell': { borderRight: '1px solid #ffffff' },
+          '& .MuiDataGrid-columnHeader:last-of-type, & .MuiDataGrid-cell:last-of-type': { borderRight: 'none' },
+          '& .MuiDataGrid-cell': { borderBottom: 'none', display: 'flex', alignItems: 'center' },
+          '& .MuiDataGrid-footerContainer': { backgroundColor: '#fdf4ff', borderTop: 'none', borderRadius: '0 0 16px 16px', padding: '4px 12px' },
+          '& .MuiDataGrid-virtualScroller': { overflowX: 'hidden' },
+          '& .MuiDataGrid-scrollbar--horizontal': { display: 'none' },
+          '& .MuiTablePagination-root, & .MuiTablePagination-displayedRows, & .MuiTablePagination-selectLabel': { color: '#610361', fontWeight: 600 },
+          '& .MuiTablePagination-select': { backgroundColor: '#ffffff', borderRadius: '10px', padding: '4px 28px 4px 10px' },
+          '& .MuiTablePagination-actions .MuiIconButton-root': {
+            color: '#610361',
+            backgroundColor: '#ffffff',
+            borderRadius: '10px',
+            border: '1px solid #f0d6fb',
+            marginLeft: '4px',
+            '&:hover': { backgroundColor: '#fce4ff' },
+          },
+          '& .MuiTablePagination-actions .MuiIconButton-root.Mui-disabled': { color: '#b58bb9', borderColor: '#f7e7fb' },
+        }}>
+          {error ? (
+            <Alert severity="error" sx={{ borderRadius: '12px' }}>
+              {(error as any).message || 'Error al conectar con el servidor'}
+            </Alert>
+          ) : (
+            <DataGrid
+              rows={videos || []}
+              columns={columns}
+              loading={isLoading}
+              pageSizeOptions={[10, 25, 50]}
+              initialState={{
+                pagination: { paginationModel: { pageSize: 10 } },
+              }}
+              localeText={{
+                paginationRowsPerPage: 'Filas por pagina',
+                paginationDisplayedRows: (params: PaginationDisplayedRowsParams) => {
+                  const { from, to, count } = params;
+                  return `${from}-${to} de ${count !== -1 ? count : `mas de ${to}`}`;
+                },
+              }}
+              rowSelection={false}
+              disableColumnMenu
+              disableColumnSorting
+              disableColumnFilter
+              disableColumnSelector
+              disableRowSelectionOnClick
+              rowHeight={70}
+            />
+          )}
+        </Box>
+      </Paper>
     </PageContainer>
   );
 }

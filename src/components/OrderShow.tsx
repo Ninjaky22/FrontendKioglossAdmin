@@ -1,6 +1,11 @@
 import * as React from 'react';
 import { Box, Button, CircularProgress, Divider, Grid, Paper, Stack, Typography, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import TimerIcon from '@mui/icons-material/Timer';
+import SettingsIcon from '@mui/icons-material/Settings';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 import { useNavigate, useParams } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import useNotifications from '../hooks/useNotifications/useNotifications';
@@ -83,11 +88,21 @@ export default function OrderShow() {
             <FormControl fullWidth sx={{ mb: 2 }}>
               <InputLabel>Estado</InputLabel>
               <Select value={status} label="Estado" onChange={(e) => setStatus(e.target.value)}>
-                <MenuItem value="PENDING">PENDIENTES</MenuItem>
-                <MenuItem value="PROCESSING">PROCESANDO</MenuItem>
-                <MenuItem value="SHIPPED">ENVIADO</MenuItem>
-                <MenuItem value="DELIVERED">ENTREGADO</MenuItem>
-                <MenuItem value="CANCELLED">CANCELADO</MenuItem>
+                <MenuItem value="PENDING" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <TimerIcon fontSize="small" sx={{ color: '#af5f00' }} /> PENDIENTES
+                </MenuItem>
+                <MenuItem value="PROCESSING" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <SettingsIcon fontSize="small" sx={{ color: '#9b30a0' }} /> PROCESANDO
+                </MenuItem>
+                <MenuItem value="SHIPPED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <LocalShippingIcon fontSize="small" sx={{ color: '#0070f3' }} /> ENVIADO
+                </MenuItem>
+                <MenuItem value="DELIVERED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CheckCircleIcon fontSize="small" sx={{ color: '#008a00' }} /> ENTREGADO
+                </MenuItem>
+                <MenuItem value="CANCELLED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CancelIcon fontSize="small" sx={{ color: '#d32f2f' }} /> CANCELADO
+                </MenuItem>
               </Select>
             </FormControl>
             <Button variant="contained" fullWidth onClick={handleStatusChange} disabled={isUpdating || status === order.status}>

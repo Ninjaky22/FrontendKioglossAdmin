@@ -1,0 +1,342 @@
+import * as React from 'react';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
+import Tooltip from '@mui/material/Tooltip';
+import Chip from '@mui/material/Chip';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import {
+  DataGrid,
+  GridActionsCellItem,
+  type GridColDef,
+  type GridPaginationModel,
+} from '@mui/x-data-grid';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import { useLocation, useNavigate, useSearchParams } from 'react-router';
+import { useDispatch, useSelector } from 'react-redux';
+import { AccionesOrder } from '../store/actions/order';
+import {
+  listaOrdersSelector,
+  obtenerOrdersEnProgresoSelector,
+  errorObtenerOrdersSelector,
+  totalElementosOrdersSelector,
+} from '../store/selectors/order';
+import PageContainer from './PageContainer';
+
+const INITIAL_PAGE_SIZE = 10;
+
+const getStatusConfig = (status: string) => {
+  switch (status) {
+    case 'PENDING': return { label: 'Pendiente', color: '#af5f00', bg: '#fff8e1', icon: '⏳' };
+    case 'PROCESSING': return { label: 'Procesando', color: '#9b30a0', bg: '#fce4ff', icon: '⚙️' };
+    case 'SHIPPED': return { label: 'Enviado', color: '#0070f3', bg: '#e6f2ff', icon: '🚚' };
+    case 'DELIVERED': return { label: 'Entregado', color: '#008a00', bg: '#e8f5e9', icon: '✅' };
+    case 'CANCELLED': return { label: 'Cancelado', color: '#d32f2f', bg: '#ffebee', icon: '❌' };
+    default: return { label: status, color: '#666', bg: '#f5f5f5', icon: '📦' };
+  }
+};
+
+export default function OrderList() {
+  const { pathname } = useLocation();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const orders = useSelector(listaOrdersSelector);
+  const isLoading = useSelector(obtenerOrdersEnProgresoSelector);
+  const error = useSelector(errorObtenerOrdersSelector);
+  const totalElements = useSelector(totalElementosOrdersSelector);
+
+  const urlPage = parseInt(searchParams.get('page') || '1', 10);
+  const statusFilter = searchParams.get('status') || 'ALL';
+
+  const [paginationModel, setPaginationModel] = React.useState<GridPaginationModel>({
+    page: urlPage - 1,
+    pageSize: INITIAL_PAGE_SIZE,
+  });
+
+  const loadData = React.useCallback(() => {
+    // 1. Le enseñamos a TypeScript la forma exacta de los parámetros (Quitamos el 'any')
+    interface FetchOrderParams {
+      page: number;
+      size: number;
+      status?: string;
+    }
+
+    const params: FetchOrderParams = {
+      page: paginationModel.page,
+      size: paginationModel.pageSize, 
+    };
+    
+    if (statusFilter && statusFilter !== 'ALL') {
+      params.status = statusFilter;
+    }
+
+    // 2. Si el action de Redux sigue sin aceptar parámetros por defecto, le decimos a TS que lo deje pasar
+    // @ts-ignore
+    dispatch(AccionesOrder.obtenerOrders(params));
+  }, [dispatch, paginationModel.page, paginationModel.pageSize, statusFilter]);
+
+  React.useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const handlePaginationModelChange = (model: GridPaginationModel) => {
+    setPaginationModel(model);
+    const statusQuery = statusFilter !== 'ALL' ? `&status=${statusFilter}` : '';
+    navigate(`${pathname}?page=${model.page + 1}${statusQuery}`, { replace: true });
+  };
+
+  const handleStatusFilterChange = (event: any) => {
+    const newStatus = event.target.value;
+    setPaginationModel((prev) => ({ ...prev, page: 0 }));
+    const statusQuery = newStatus !== 'ALL' ? `&status=${newStatus}` : '';
+    navigate(`${pathname}?page=1${statusQuery}`, { replace: true });
+  };
+
+  const columns: GridColDef<any>[] = React.useMemo(
+    () => [
+      { 
+        field: 'id', 
+        headerName: 'ORDEN', 
+        width: 100,
+        renderCell: (params) => (
+          <Typography variant="body2" sx={{ fontWeight: 800, color: '#610361', fontFamily: 'monospace' }}>
+            #{params.row?.id}
+          </Typography>
+        )
+      },
+      {
+        field: 'customer',
+        headerName: 'CLIENTE',
+        minWidth: 280,
+        flex: 1,
+        valueGetter: (params: any) => {
+          const customer = params?.row?.customer;
+          return customer ? customer.name : 'Desconocido';
+        },
+        renderCell: (params) => {
+          const customer = params.row?.customer;
+          if (!customer) return <Typography variant="caption">Cargando...</Typography>;
+          return (
+            <Box sx={{ py: 1.5 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: '#333' }}>
+                {customer.name} 
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#9b30a0', opacity: 0.8 }}>
+                {customer.email}
+              </Typography>
+            </Box>
+          );
+        },
+      },
+      {
+        field: 'amount', 
+        headerName: 'TOTAL',
+        width: 150,
+        renderCell: (params) => (
+          <Typography variant="body2" sx={{ fontWeight: 700, color: '#610361' }}>
+            ${params.row?.amount?.toLocaleString('es-CO')}
+          </Typography>
+        ),
+      },
+      {
+        field: 'status',
+        headerName: 'ESTADO',
+        width: 170,
+        renderCell: (params) => {
+          const status = params.row?.status;
+          if (!status) return null;
+          const config = getStatusConfig(status as string);
+          return (
+            <Chip
+              label={`${config.icon} ${config.label}`}
+              size="small"
+              sx={{
+                backgroundColor: config.bg,
+                color: config.color,
+                fontWeight: 700,
+                fontSize: '0.75rem',
+                borderRadius: '12px',
+                border: `1px solid ${config.color}33`,
+              }}
+            />
+          );
+        },
+      },
+      {
+        field: 'date', 
+        headerName: 'FECHA DE REGISTRO',
+        width: 220,
+        renderCell: (params) => {
+          const date = params.row?.date;
+          if (!date) return null;
+          
+          let dateStr = date;
+          if (Array.isArray(date)) {
+              dateStr = `${date[0]}-${String(date[1]).padStart(2, '0')}-${String(date[2]).padStart(2, '0')}`;
+          }
+
+          return (
+            <Typography variant="body2" sx={{ color: '#666', fontSize: '0.85rem' }}>
+              {new Date(dateStr as string).toLocaleDateString('es-CO', {
+                 year: 'numeric', month: 'long', day: 'numeric'
+              })}
+            </Typography>
+          );
+        },
+      },
+      {
+        field: 'actions',
+        type: 'actions',
+        headerName: 'ACCIONES',
+        width: 110,
+        getActions: (params) => [
+          <GridActionsCellItem
+            icon={
+              <Tooltip title="Ver Detalles">
+                <Box sx={{ 
+                  backgroundColor: '#fce4ff', 
+                  p: 0.8, 
+                  borderRadius: 2, 
+                  display: 'flex',
+                  transition: '0.2s',
+                  '&:hover': { backgroundColor: '#9b30a0', color: '#fff' }
+                }}>
+                  <VisibilityIcon fontSize="small" />
+                </Box>
+              </Tooltip>
+            }
+            label="Detalle"
+            onClick={() => navigate(`/admin/orders/${params.row?.id}`)}
+          />,
+        ],
+      },
+    ],
+    [navigate]
+  );
+
+  return (
+    <PageContainer title="Gestión de Pedidos" breadcrumbs={[{ title: 'Pedidos' }]}>
+      <Paper 
+        elevation={0} 
+        sx={{ 
+          p: { xs: 2, md: 4 }, 
+          borderRadius: '24px', 
+          border: '1px solid #f0d6fb',
+          boxShadow: '0 10px 40px -10px rgba(155, 48, 160, 0.05)',
+          backgroundColor: '#ffffff',
+          overflow: 'hidden',
+          maxWidth: '100%'
+        }}
+      >
+        <Stack 
+          direction={{ xs: 'column', sm: 'row' }} 
+          spacing={3} 
+          justifyContent="space-between"
+          alignItems={{ xs: 'stretch', sm: 'center' }}
+          sx={{ mb: 4 }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+             <Box sx={{ 
+                p: 1.5, 
+                borderRadius: 3, 
+                backgroundColor: '#fdf4ff', 
+                color: '#9b30a0',
+                display: { xs: 'none', md: 'flex' }
+             }}>
+                <ShoppingBagIcon />
+             </Box>
+             <Box>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: '#610361', lineHeight: 1.2 }}>
+                   Listado de Pedidos
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                   Administra y gestiona las ventas de Kiogloss
+                </Typography>
+             </Box>
+          </Box>
+
+          <Stack direction="row" spacing={2} alignItems="center">
+            <FormControl size="small" sx={{ minWidth: 220 }}>
+              <InputLabel sx={{ color: '#9b30a0' }}>Filtrar por Estado</InputLabel>
+              <Select 
+                value={statusFilter} 
+                label="Filtrar por Estado" 
+                onChange={handleStatusFilterChange}
+                sx={{ borderRadius: '12px', backgroundColor: '#fdf4ff' }}
+              >
+                <MenuItem value="ALL">📦 Todos los pedidos</MenuItem>
+                <MenuItem value="PENDING">⏳ Pendientes</MenuItem>
+                <MenuItem value="PROCESSING">⚙️ En Proceso</MenuItem>
+                <MenuItem value="SHIPPED">🚚 Enviados</MenuItem>
+                <MenuItem value="DELIVERED">✅ Entregados</MenuItem>
+                <MenuItem value="CANCELLED">❌ Cancelados</MenuItem>
+              </Select>
+            </FormControl>
+
+            <Tooltip title="Refrescar Lista">
+              <IconButton 
+                onClick={loadData} 
+                sx={{ 
+                  color: '#9b30a0', 
+                  backgroundColor: '#fdf4ff',
+                  borderRadius: '12px',
+                  '&:hover': { backgroundColor: '#fce4ff' }
+                }}
+              >
+                <RefreshIcon />
+              </IconButton>
+            </Tooltip>
+          </Stack>
+        </Stack>
+
+        <Box sx={{ 
+          width: '100%', 
+          height: { xs: 550, lg: 700 },
+          '& .MuiDataGrid-root': { border: 'none' },
+          '& .MuiDataGrid-columnHeaders': {
+            backgroundColor: '#fdf4ff',
+            color: '#610361',
+            borderRadius: '12px',
+            borderBottom: 'none',
+            fontWeight: 800,
+            textTransform: 'uppercase',
+            fontSize: '0.75rem',
+          },
+          '& .MuiDataGrid-cell': {
+            borderBottom: '1px solid #fdf4ff',
+          }
+        }}>
+          {error ? (
+            <Alert severity="error" sx={{ borderRadius: '12px' }}>
+              {error.message || 'Error al conectar con el servidor'}
+            </Alert>
+          ) : (
+            <DataGrid<any>
+              rows={orders || []}
+              rowCount={totalElements || 0}
+              columns={columns}
+              pagination
+              paginationMode="server"
+              paginationModel={paginationModel}
+              onPaginationModelChange={handlePaginationModelChange}
+              loading={isLoading}
+              pageSizeOptions={[10, 25, 50]}
+              disableRowSelectionOnClick
+              rowHeight={70}
+            />
+          )}
+        </Box>
+      </Paper>
+    </PageContainer>
+  );
+}
