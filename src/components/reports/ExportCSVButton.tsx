@@ -1,4 +1,4 @@
-import * as React from 'react';
+// CORRECCIÓN: Se eliminó el "import * as React from 'react'" ya que no se utiliza.
 import Button from '@mui/material/Button';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import type { SalesByDay } from '../../models/report.model';
@@ -51,6 +51,8 @@ export default function ExportCSVButton({
       disabled={isDisabled}
       sx={{
         borderRadius: 999,
+        // Usamos colores directos si las variables CSS no están cargadas, 
+        // o mantenemos tus variables si funcionan bien en tu tema.
         borderColor: 'var(--color-secondary)',
         color: 'var(--color-secondary)',
         fontWeight: 600,

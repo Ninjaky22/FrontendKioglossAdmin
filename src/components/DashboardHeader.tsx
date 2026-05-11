@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { styled, useTheme } from '@mui/material/styles';
+import { styled } from '@mui/material/styles'; // Quitamos useTheme de aquí
 import Box from '@mui/material/Box';
 import MuiAppBar from '@mui/material/AppBar';
 import IconButton from '@mui/material/IconButton';
@@ -17,11 +17,12 @@ import { CerrarSesion } from '../store/actions/session';
 import { useDispatch } from 'react-redux';
 import { HEADER_HEIGHT } from '../constants';
 
+// El 'theme' dentro de styled sí se usa para el divider y el zIndex
 const AppBar = styled(MuiAppBar)(({ theme }) => ({
   borderWidth: 0,
   borderBottomWidth: 1,
   borderStyle: 'solid',
-  borderColor: (theme.vars ?? theme).palette.divider,
+  borderColor: theme.palette.divider,
   boxShadow: 'none',
   zIndex: theme.zIndex.drawer + 1,
 }));
@@ -49,9 +50,9 @@ export default function DashboardHeader({
   menuOpen,
   onToggleMenu,
 }: DashboardHeaderProps) {
-  const theme = useTheme();
-  const dispatch = useDispatch<any>()
-  const navegate = useNavigate();
+  // CORRECCIÓN: Eliminamos 'const theme = useTheme();' porque no se usaba en el cuerpo del componente
+  const dispatch = useDispatch<any>();
+  const navigate = useNavigate();
 
   const handleMenuOpen = React.useCallback(() => {
     onToggleMenu(!menuOpen);
@@ -159,7 +160,7 @@ export default function DashboardHeader({
               <Button
                 onClick={() => {
                   dispatch(CerrarSesion());
-                  navegate('/log-in');
+                  navigate('/log-in');
                 }}
                 variant="contained"
                 sx={{
@@ -169,6 +170,7 @@ export default function DashboardHeader({
                   color: '#4a024a',
                   fontWeight: 700,
                   textTransform: 'none',
+                  borderRadius: '10px',
                   '&:hover': {
                     backgroundColor: '#f6e9f6',
                   },

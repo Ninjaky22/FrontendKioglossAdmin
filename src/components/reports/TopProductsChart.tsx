@@ -8,8 +8,8 @@ export interface TopProductsChartProps {
   data: TopProduct[];
 }
 
+// Variables de color consistentes con tu paleta
 const COLOR_PRIMARY = '#610361';
-const COLOR_SECONDARY = '#9b30a0';
 const COLOR_TERTIARY = '#f2a6dd';
 
 const BRAND_PALETTE = [
@@ -65,6 +65,9 @@ const currencyFormatter = new Intl.NumberFormat('es-CO', {
 
 export default function TopProductsChart({ data }: TopProductsChartProps) {
   const theme = useTheme();
+  
+  // CORRECCIÓN: Usar theme.palette.mode en lugar de useColorScheme() para evitar errores de Provider
+  const isDark = theme.palette.mode === 'dark';
   const textPrimary = theme.palette.text.primary;
   const textSecondary = theme.palette.text.secondary;
   const gridColor = alpha(theme.palette.divider, 0.6);
@@ -109,14 +112,9 @@ export default function TopProductsChart({ data }: TopProductsChartProps) {
     xaxis: {
       categories: labels,
       labels: {
-        formatter: (value) => {
-          const numericValue = Number(value);
-          return Number.isNaN(numericValue)
-            ? String(value)
-            : `${numericValue}`;
-        },
         style: {
           fontFamily: "'Winky Sans', sans-serif",
+          colors: textSecondary,
         },
       },
     },
@@ -124,52 +122,28 @@ export default function TopProductsChart({ data }: TopProductsChartProps) {
       labels: {
         style: {
           fontFamily: "'Winky Sans', sans-serif",
+          colors: textSecondary,
         },
       },
     },
     grid: {
       borderColor: gridColor,
       strokeDashArray: 4,
-      padding: { left: 12, right: 12 },
     },
     tooltip: {
-      theme: theme.palette.mode === 'dark' ? 'dark' : 'light',
+      theme: isDark ? 'dark' : 'light',
       custom: ({ dataPointIndex }) => {
         const point = data[dataPointIndex];
         if (!point) return '';
         return `
-          <div style="padding: 10px 12px; font-family: 'Winky Sans', sans-serif;">
+          <div style="padding: 10px 12px; font-family: 'Winky Sans', sans-serif; background: ${isDark ? '#1e1e1e' : '#fff'}; border: 1px solid ${gridColor};">
             <div style="font-weight: 600; margin-bottom: 4px; color: ${textPrimary};">${point.productTitle}</div>
             <div style="color: ${textSecondary}; font-size: 12px;">Cantidad: <strong>${point.totalQuantitySold}</strong></div>
-            <div style="color: ${textSecondary}; font-size: 12px;">Ingresos: <strong>${currencyFormatter.format(
-              point.totalRevenue,
-            )}</strong></div>
+            <div style="color: ${textSecondary}; font-size: 12px;">Ingresos: <strong>${currencyFormatter.format(point.totalRevenue)}</strong></div>
           </div>
         `;
       },
     },
-    responsive: [
-      {
-        breakpoint: 1024,
-        options: {
-          chart: { height: 300 },
-        },
-      },
-      {
-        breakpoint: 640,
-        options: {
-          chart: { height: 250 },
-          legend: { position: 'bottom' },
-        },
-      },
-      {
-        breakpoint: 480,
-        options: {
-          chart: { height: 220 },
-          legend: { position: 'bottom' },
-        },
-      },
-    ],
   };
 
   return (

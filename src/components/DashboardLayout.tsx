@@ -6,7 +6,7 @@ import Toolbar from '@mui/material/Toolbar';
 import { Outlet } from 'react-router';
 import DashboardHeader from './DashboardHeader';
 import DashboardSidebar from './DashboardSidebar';
-import SitemarkIcon from './SitemarkIcon';
+// CORRECCIÓN: Se eliminó la importación de SitemarkIcon que no se usaba
 import { HEADER_HEIGHT } from '../constants';
 
 export default function DashboardLayout() {
@@ -53,8 +53,9 @@ export default function DashboardLayout() {
       sx={{
         position: 'relative',
         display: 'flex',
-        overflow: 'hidden',
-        height: '200vh',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        height: '100vh',
         width: '100%',
       }}
     >
@@ -62,7 +63,7 @@ export default function DashboardLayout() {
         logo={(
           <img
             src="src/assets/logoPag.png"
-            alt="Sitemark Logo"
+            alt="Logo"
             style={{ height: 50, width: 'auto', marginRight: 12 }}
           />
         )}

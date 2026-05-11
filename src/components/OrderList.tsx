@@ -28,6 +28,7 @@ import {
 import RefreshIcon from '@mui/icons-material/Refresh';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+// MANTENEMOS TUS IMPORTACIONES ORIGINALES
 import { useLocation, useNavigate, useSearchParams } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { AccionesOrder } from '../store/actions/order';
@@ -42,7 +43,10 @@ import type { OrderSummaryDTO, CustomerBasicDTO } from '../models/Order';
 
 const INITIAL_PAGE_SIZE = 10;
 
-const STATUS_VARIANTS: Record<string, { canonical: keyof typeof STATUS_CONFIG; label?: string }> = {
+// Definimos los estados válidos para evitar errores de referencia
+type CanonicalStatus = 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+
+const STATUS_VARIANTS: Record<string, { canonical: CanonicalStatus; label?: string }> = {
   PENDING: { canonical: 'PENDING' },
   PENDIENTE: { canonical: 'PENDING', label: 'Pendiente' },
   PENDIENTES: { canonical: 'PENDING', label: 'Pendientes' },
@@ -98,98 +102,98 @@ export default function OrderList() {
   const listTextColor = isDark ? theme.palette.common.white : theme.palette.text.primary;
 
   const { pathname } = useLocation();
-    const statusConfig = React.useMemo(
-      () => ({
-        PENDING: {
-          label: 'Pendiente',
-          color: theme.palette.warning.main,
-          bg: alpha(theme.palette.warning.main, isDark ? 0.22 : 0.12),
-          icon: <TimerIcon />,
-        },
-        PROCESSING: {
-          label: 'Procesando',
-          color: theme.palette.primary.main,
-          bg: alpha(theme.palette.primary.main, isDark ? 0.22 : 0.12),
-          icon: <SettingsIcon />,
-        },
-        SHIPPED: {
-          label: 'Enviado',
-          color: theme.palette.info.main,
-          bg: alpha(theme.palette.info.main, isDark ? 0.22 : 0.12),
-          icon: <LocalShippingIcon />,
-        },
-        DELIVERED: {
-          label: 'Entregado',
-          color: theme.palette.success.main,
-          bg: alpha(theme.palette.success.main, isDark ? 0.22 : 0.12),
-          icon: <CheckCircleIcon />,
-        },
-        CANCELLED: {
-          label: 'Cancelado',
-          color: theme.palette.error.main,
-          bg: alpha(theme.palette.error.main, isDark ? 0.22 : 0.12),
-          icon: <CancelIcon />,
-        },
-      }),
-      [theme.palette, isDark],
-    );
-
-    const menuPropsStyles = React.useMemo(
-      () => ({
-        PaperProps: {
-          sx: {
-            borderRadius: '12px',
-            border: `1px solid ${theme.palette.divider}`,
-            boxShadow: isDark
-              ? '0 16px 40px rgba(0, 0, 0, 0.45)'
-              : '0 10px 40px -10px rgba(155, 48, 160, 0.12)',
-            mt: 1,
-            backgroundColor: theme.palette.background.paper,
-            '& .MuiMenuItem-root': {
-              borderRadius: '8px',
-              mx: 1,
-              mb: 0.5,
-              padding: '8px 12px',
-              outline: 'none',
-              '&:focus, &:focus-visible': { outline: 'none' },
-              '&:hover': { backgroundColor: theme.palette.action.hover },
-              '&.Mui-selected': {
-                backgroundColor: theme.palette.action.selected,
-                color: theme.palette.text.primary,
-                fontWeight: 600,
-                '&:hover': { backgroundColor: theme.palette.action.selected },
-              },
-            },
-          },
-        },
-      }),
-      [theme.palette, isDark],
-    );
-
-    const getStatusConfig = React.useCallback(
-      (status: string) => {
-        const normalizedStatus = normalizeStatus(status);
-        const variant = STATUS_VARIANTS[normalizedStatus];
-        const canonicalKey =
-          variant?.canonical ?? (normalizedStatus as keyof typeof statusConfig);
-        const baseConfig = statusConfig[canonicalKey];
-
-        if (baseConfig) {
-          return { ...baseConfig, label: variant?.label ?? baseConfig.label };
-        }
-
-        return {
-          label: status,
-          color: theme.palette.text.secondary,
-          bg: alpha(theme.palette.text.primary, isDark ? 0.14 : 0.06),
-          icon: <InventoryIcon />,
-        };
-      },
-      [statusConfig, theme.palette, isDark],
-    );
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const dispatch = useDispatch<any>();
+
+  const statusConfig = React.useMemo(
+    () => ({
+      PENDING: {
+        label: 'Pendiente',
+        color: theme.palette.warning.main,
+        bg: alpha(theme.palette.warning.main, isDark ? 0.22 : 0.12),
+        icon: <TimerIcon />,
+      },
+      PROCESSING: {
+        label: 'Procesando',
+        color: theme.palette.primary.main,
+        bg: alpha(theme.palette.primary.main, isDark ? 0.22 : 0.12),
+        icon: <SettingsIcon />,
+      },
+      SHIPPED: {
+        label: 'Enviado',
+        color: theme.palette.info.main,
+        bg: alpha(theme.palette.info.main, isDark ? 0.22 : 0.12),
+        icon: <LocalShippingIcon />,
+      },
+      DELIVERED: {
+        label: 'Entregado',
+        color: theme.palette.success.main,
+        bg: alpha(theme.palette.success.main, isDark ? 0.22 : 0.12),
+        icon: <CheckCircleIcon />,
+      },
+      CANCELLED: {
+        label: 'Cancelado',
+        color: theme.palette.error.main,
+        bg: alpha(theme.palette.error.main, isDark ? 0.22 : 0.12),
+        icon: <CancelIcon />,
+      },
+    }),
+    [theme.palette, isDark],
+  );
+
+  const menuPropsStyles = React.useMemo(
+    () => ({
+      PaperProps: {
+        sx: {
+          borderRadius: '12px',
+          border: `1px solid ${theme.palette.divider}`,
+          boxShadow: isDark
+            ? '0 16px 40px rgba(0, 0, 0, 0.45)'
+            : '0 10px 40px -10px rgba(155, 48, 160, 0.12)',
+          mt: 1,
+          backgroundColor: theme.palette.background.paper,
+          '& .MuiMenuItem-root': {
+            borderRadius: '8px',
+            mx: 1,
+            mb: 0.5,
+            padding: '8px 12px',
+            outline: 'none',
+            '&:focus, &:focus-visible': { outline: 'none' },
+            '&:hover': { backgroundColor: theme.palette.action.hover },
+            '&.Mui-selected': {
+              backgroundColor: theme.palette.action.selected,
+              color: theme.palette.text.primary,
+              fontWeight: 600,
+              '&:hover': { backgroundColor: theme.palette.action.selected },
+            },
+          },
+        },
+      },
+    }),
+    [theme.palette, isDark],
+  );
+
+  const getStatusConfig = React.useCallback(
+    (status: string) => {
+      const normalizedStatus = normalizeStatus(status);
+      const variant = STATUS_VARIANTS[normalizedStatus];
+      const canonicalKey = variant?.canonical ?? (normalizedStatus as CanonicalStatus);
+      const baseConfig = statusConfig[canonicalKey];
+
+      if (baseConfig) {
+        return { ...baseConfig, label: variant?.label ?? baseConfig.label };
+      }
+
+      return {
+        label: status,
+        color: theme.palette.text.secondary,
+        bg: alpha(theme.palette.text.primary, isDark ? 0.14 : 0.06),
+        icon: <InventoryIcon />,
+      };
+    },
+    [statusConfig, theme.palette, isDark],
+  );
 
   const orders = useSelector(listaOrdersSelector);
   const isLoading = useSelector(obtenerOrdersEnProgresoSelector);
@@ -204,7 +208,6 @@ export default function OrderList() {
     pageSize: INITIAL_PAGE_SIZE,
   });
 
-  // LÓGICA ORIGINAL RESTAURADA EXACTAMENTE COMO LA TENÍAS
   const loadData = React.useCallback(() => {
     dispatch(
       AccionesOrder.obtenerOrders(
@@ -230,7 +233,6 @@ export default function OrderList() {
     navigate(`${pathname}?page=1${newStatus !== 'ALL' ? `&status=${newStatus}` : ''}`, { replace: true });
   };
 
-  // Campos del DTO (customer, amount, date)
   const columns: GridColDef<OrderRow>[] = React.useMemo(
     () => [
       { 
@@ -278,35 +280,32 @@ export default function OrderList() {
         ),
       },
       {
-  field: 'status',
-  headerName: 'ESTADO',
-  width: 170,
-  renderCell: (params) => {
-    const config = getStatusConfig(params.value as string);
-    return (
-      <Chip
-        // Pasamos el componente de icono directamente aquí
-        icon={config.icon} 
-        // El label ahora solo lleva el texto, sin el emoji
-        label={config.label} 
-        size="small"
-        sx={{
-          backgroundColor: config.bg,
-          color: isDark ? theme.palette.common.white : config.color,
-          fontWeight: 700,
-          fontSize: '0.75rem',
-          borderRadius: '12px',
-          border: `1px solid ${alpha(isDark ? theme.palette.common.white : config.color, 0.3)}`,
-          // Esto asegura que el icono herede el color del texto del Chip
-          '& .MuiChip-icon': { 
-            color: 'inherit',
-            marginLeft: '8px' // Ajuste de margen para que no quede pegado al borde
-          },
-        }}
-      />
-    );
-  },
-},
+        field: 'status',
+        headerName: 'ESTADO',
+        width: 170,
+        renderCell: (params) => {
+          const config = getStatusConfig(params.value as string);
+          return (
+            <Chip
+              icon={config.icon} 
+              label={config.label} 
+              size="small"
+              sx={{
+                backgroundColor: config.bg,
+                color: isDark ? theme.palette.common.white : config.color,
+                fontWeight: 700,
+                fontSize: '0.75rem',
+                borderRadius: '12px',
+                border: `1px solid ${alpha(isDark ? theme.palette.common.white : config.color, 0.3)}`,
+                '& .MuiChip-icon': { 
+                  color: 'inherit',
+                  marginLeft: '8px'
+                },
+              }}
+            />
+          );
+        },
+      },
       {
         field: 'date',
         headerName: 'FECHA DE REGISTRO',
@@ -326,6 +325,7 @@ export default function OrderList() {
         width: 110,
         getActions: (params) => [
           <GridActionsCellItem
+            key="view"
             icon={
               <Tooltip title="Ver Detalles">
                 <span>
@@ -346,7 +346,7 @@ export default function OrderList() {
         ],
       },
     ],
-    [navigate, listTextColor, isDark, theme.palette]
+    [navigate, listTextColor, isDark, theme.palette, getStatusConfig]
   );
 
   return (
@@ -376,8 +376,8 @@ export default function OrderList() {
              <Box sx={{ 
                 p: 1.5, 
                 borderRadius: 3, 
-               backgroundColor: accentSoft, 
-               color: theme.palette.primary.main,
+                backgroundColor: accentSoft, 
+                color: theme.palette.primary.main,
                 display: { xs: 'none', md: 'flex' }
              }}>
                 <ShoppingBagIcon />
@@ -394,72 +394,47 @@ export default function OrderList() {
 
           <Stack direction="row" spacing={2} alignItems="center">
             <FormControl size="small" sx={{ minWidth: 220 }}>
-  <InputLabel sx={{ color: isDark ? theme.palette.common.white : theme.palette.primary.main }}>Filtrar por Estado</InputLabel>
-  <Select 
-  value={statusFilter}
-  label="Filtrar por Estado"
-  onChange={handleStatusFilterChange}
-  MenuProps={menuPropsStyles}
-  sx={{ 
-    borderRadius: '12px', 
-    backgroundColor: accentSoft,
-    
-    // ELIMINACIÓN TOTAL DE BORDES
-    '& .MuiOutlinedInput-notchedOutline': {
-      border: 'none', // Quita el borde base
-    },
-    '&:hover .MuiOutlinedInput-notchedOutline': {
-      border: 'none', // Quita el borde al pasar el mouse
-    },
-    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      border: 'none', // Quita el borde cuando está seleccionado
-    },
-
-    // LIMPIEZA DE CONTORNOS (OUTLINES)
-    '&.MuiOutlinedInput-root': {
-      outline: 'none',
-      '&:focus': {
-        outline: 'none',
-      }
-    },
-    
-    '& .MuiSelect-select': { 
-      display: 'flex', 
-      alignItems: 'center', 
-      gap: 1,
-      '&:focus': {
-        backgroundColor: 'transparent', // Evita el fondo gris al hacer clic
-        outline: 'none',
-      }
-    }
-  }}
->
-  <MenuItem value="ALL" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-    <InventoryIcon fontSize="small" sx={{ color: theme.palette.primary.main }} /> Todos los pedidos
-  </MenuItem>
-  <MenuItem value="PENDING" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-    <TimerIcon fontSize="small" sx={{ color: theme.palette.warning.main }} /> Pendientes
-  </MenuItem>
-  <MenuItem value="PROCESSING" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-    <SettingsIcon fontSize="small" sx={{ color: theme.palette.primary.main }} /> En Proceso
-  </MenuItem>
-  <MenuItem value="SHIPPED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-    <LocalShippingIcon fontSize="small" sx={{ color: theme.palette.info.main }} /> Enviados
-  </MenuItem>
-  <MenuItem value="DELIVERED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-    <CheckCircleIcon fontSize="small" sx={{ color: theme.palette.success.main }} /> Entregados
-  </MenuItem>
-  <MenuItem value="CANCELLED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-    <CancelIcon fontSize="small" sx={{ color: theme.palette.error.main }} /> Cancelados
-  </MenuItem>
-</Select>
-</FormControl>
+              <InputLabel sx={{ color: isDark ? theme.palette.common.white : theme.palette.primary.main }}>Filtrar por Estado</InputLabel>
+              <Select 
+                value={statusFilter}
+                label="Filtrar por Estado"
+                onChange={handleStatusFilterChange}
+                MenuProps={menuPropsStyles}
+                sx={{ 
+                  borderRadius: '12px', 
+                  backgroundColor: accentSoft,
+                  '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                  '&:hover .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                  '& .MuiSelect-select': { display: 'flex', alignItems: 'center', gap: 1 }
+                }}
+              >
+                <MenuItem value="ALL" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <InventoryIcon fontSize="small" sx={{ color: theme.palette.primary.main }} /> Todos los pedidos
+                </MenuItem>
+                <MenuItem value="PENDING" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <TimerIcon fontSize="small" sx={{ color: theme.palette.warning.main }} /> Pendientes
+                </MenuItem>
+                <MenuItem value="PROCESSING" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <SettingsIcon fontSize="small" sx={{ color: theme.palette.primary.main }} /> En Proceso
+                </MenuItem>
+                <MenuItem value="SHIPPED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <LocalShippingIcon fontSize="small" sx={{ color: theme.palette.info.main }} /> Enviados
+                </MenuItem>
+                <MenuItem value="DELIVERED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CheckCircleIcon fontSize="small" sx={{ color: theme.palette.success.main }} /> Entregados
+                </MenuItem>
+                <MenuItem value="CANCELLED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CancelIcon fontSize="small" sx={{ color: theme.palette.error.main }} /> Cancelados
+                </MenuItem>
+              </Select>
+            </FormControl>
 
             <Tooltip title="Refrescar Lista">
               <IconButton 
                 onClick={loadData} 
                 sx={{ 
-                  color: theme.palette.getContrastText(theme.palette.primary.main),
+                  color: '#fff',
                   backgroundColor: theme.palette.primary.main,
                   borderRadius: '12px',
                   '&:hover': { backgroundColor: theme.palette.primary.dark }
@@ -475,46 +450,26 @@ export default function OrderList() {
           width: '100%', 
           height: { xs: 550, lg: 700 },
           '& .MuiDataGrid-root': { border: 'none', color: listTextColor },
-          '& .MuiDataGrid-cell, & .MuiDataGrid-cellContent, & .MuiDataGrid-row': {
-            color: listTextColor,
-          },
           '& .MuiDataGrid-columnHeaders': {
             backgroundColor: `${theme.palette.primary.dark} !important`,
-            color: theme.palette.getContrastText(theme.palette.primary.dark),
+            color: '#fff',
             borderRadius: '12px',
             borderBottom: 'none',
             fontWeight: 800,
             textTransform: 'uppercase',
             fontSize: '0.75rem',
           },
-          '& .MuiDataGrid-columnHeader': {
-            backgroundColor: `${theme.palette.primary.dark} !important`,
-          },
-          '& .MuiDataGrid-columnHeaderTitle': {
-            color: `${theme.palette.getContrastText(theme.palette.primary.dark)} !important`,
-            fontWeight: 800,
-          },
-          '& .MuiDataGrid-columnSeparator': {
-            display: 'block',
-            color: theme.palette.getContrastText(theme.palette.primary.dark),
-          },
-          '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within, & .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within': {
-            outline: 'none',
-          },
-          '& .MuiDataGrid-row.Mui-selected, & .MuiDataGrid-row.Mui-selected:hover, & .MuiDataGrid-cell.Mui-selected, & .MuiDataGrid-cell.Mui-selected:focus': {
-            backgroundColor: 'transparent',
-          },
-          '& .MuiDataGrid-columnHeader, & .MuiDataGrid-cell': {
+          '& .MuiDataGrid-columnHeader': { backgroundColor: `${theme.palette.primary.dark} !important` },
+          '& .MuiDataGrid-columnHeaderTitle': { color: '#fff !important', fontWeight: 800 },
+          '& .MuiDataGrid-cell': { 
+            borderBottom: 'none', 
             borderRight: `1px solid ${theme.palette.divider}`,
+            display: 'flex', 
+            alignItems: 'center' 
           },
-          '& .MuiDataGrid-columnHeader:last-of-type, & .MuiDataGrid-cell:last-of-type': {
-            borderRight: 'none',
-          },
-          '& .MuiDataGrid-cell': {
-            borderBottom: 'none',
-            display: 'flex',
-            alignItems: 'center',
-          },
+          '& .MuiDataGrid-cell:last-of-type': { borderRight: 'none' },
+          
+          // --- ESTILOS DE PAGINACIÓN SIN SCROLL Y FLECHAS BLANCAS ---
           '& .MuiDataGrid-footerContainer': {
             backgroundColor: isDark ? '#121018' : theme.palette.background.paper,
             borderTop: 'none',
@@ -522,37 +477,31 @@ export default function OrderList() {
             padding: '4px 12px',
             overflow: 'hidden',
           },
-          '& .MuiDataGrid-virtualScroller': {
-            overflowX: 'hidden',
-          },
-          '& .MuiDataGrid-scrollbar--horizontal': {
-            display: 'none',
-          },
-          '& .MuiTablePagination-root, & .MuiTablePagination-displayedRows, & .MuiTablePagination-selectLabel': {
-            color: listTextColor,
-            fontWeight: 600,
-          },
+          '& .MuiTablePagination-root': { color: listTextColor, overflow: 'hidden' },
           '& .MuiTablePagination-select': {
-            backgroundColor: theme.palette.background.paper,
+            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : theme.palette.background.paper,
             borderRadius: '10px',
-            padding: '4px 28px 4px 10px',
             color: listTextColor,
           },
-          '& .MuiTablePagination-selectIcon': {
-            color: listTextColor,
+          '& .MuiTablePagination-actions': {
+            overflow: 'hidden !important',
+            display: 'flex',
+            alignItems: 'center',
+            minWidth: '90px',
+            justifyContent: 'center'
           },
           '& .MuiTablePagination-actions .MuiIconButton-root': {
-            color: listTextColor,
-            backgroundColor: theme.palette.background.paper,
+            color: isDark ? '#ffffff !important' : 'inherit',
+            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
             borderRadius: '10px',
-            border: `1px solid ${theme.palette.divider}`,
-            marginLeft: '4px',
-            '&:hover': { backgroundColor: theme.palette.action.hover },
+            margin: '0 2px',
+            padding: '4px',
+            border: isDark ? `1px solid ${alpha(theme.palette.divider, 0.5)}` : 'none',
+            '& svg': { color: 'inherit' },
+            '&.Mui-disabled': { opacity: 0.3 }
           },
-          '& .MuiTablePagination-actions .MuiIconButton-root.Mui-disabled': {
-            color: theme.palette.text.disabled,
-            borderColor: theme.palette.divider,
-          },
+          '& .MuiDataGrid-virtualScroller': { overflowX: 'hidden' },
+          '& .MuiDataGrid-scrollbar--horizontal': { display: 'none' },
         }}>
           {error ? (
             <Alert severity="error" sx={{ borderRadius: '12px' }}>
@@ -563,7 +512,6 @@ export default function OrderList() {
               rows={orders || []}
               rowCount={totalElements || 0}
               columns={columns}
-              pagination
               paginationMode="server"
               paginationModel={paginationModel}
               onPaginationModelChange={handlePaginationModelChange}
@@ -571,10 +519,8 @@ export default function OrderList() {
               pageSizeOptions={[10, 25, 50]}
               localeText={{
                 paginationRowsPerPage: 'Filas por pagina',
-                paginationDisplayedRows: (params: PaginationDisplayedRowsParams) => {
-                  const { from, to, count } = params;
-                  return `${from}-${to} de ${count !== -1 ? count : `mas de ${to}`}`;
-                },
+                paginationDisplayedRows: (params: PaginationDisplayedRowsParams) => 
+                  `${params.from}-${params.to} de ${params.count !== -1 ? params.count : `mas de ${params.to}`}`,
               }}
               rowSelection={false}
               disableColumnMenu
