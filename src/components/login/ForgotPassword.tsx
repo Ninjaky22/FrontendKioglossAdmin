@@ -122,8 +122,16 @@ export default function ForgotPassword({ open, handleClose }: ForgotPasswordProp
         },
       }}
     >
-      <Box sx={{ height: 6, backgroundColor: '#610361' }} />
-      <DialogTitle sx={{ fontWeight: 800, color: '#610361' }}>
+      <Box sx={{ height: 6, backgroundColor: 'primary.main' }} />
+      <DialogTitle
+        sx={{
+          fontWeight: 800,
+          color: (theme) =>
+            theme.palette.mode === 'dark'
+              ? theme.palette.primary.light
+              : theme.palette.primary.dark,
+        }}
+      >
         Recuperar contraseña
       </DialogTitle>
       <DialogContent

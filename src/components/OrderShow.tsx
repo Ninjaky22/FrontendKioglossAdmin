@@ -54,10 +54,10 @@ export default function OrderShow() {
             <Divider sx={{ mb: 2 }} />
             <Stack spacing={2}>
               {order.items.map((item, idx) => (
-                <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 2, pb: 2, borderBottom: '1px solid #eee' }}>
+                <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 2, pb: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
                   {item.product?.firstImage ? (
                     <Box component="img" src={item.product.firstImage} alt={item.product.title} sx={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 1 }} />
-                  ) : <Box sx={{ width: 60, height: 60, bgcolor: 'grey.200', borderRadius: 1 }} />}
+                  ) : <Box sx={{ width: 60, height: 60, bgcolor: 'action.hover', borderRadius: 1 }} />}
                   <Box sx={{ flex: 1 }}>
                     <Typography variant="subtitle2">{item.product?.title || 'Producto'}</Typography>
                     <Typography variant="body2" color="text.secondary">{item.variantDetails}</Typography>
@@ -89,19 +89,19 @@ export default function OrderShow() {
               <InputLabel>Estado</InputLabel>
               <Select value={status} label="Estado" onChange={(e) => setStatus(e.target.value)}>
                 <MenuItem value="PENDING" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <TimerIcon fontSize="small" sx={{ color: '#af5f00' }} /> PENDIENTES
+                  <TimerIcon fontSize="small" sx={{ color: 'warning.main' }} /> PENDIENTES
                 </MenuItem>
                 <MenuItem value="PROCESSING" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <SettingsIcon fontSize="small" sx={{ color: '#9b30a0' }} /> PROCESANDO
+                  <SettingsIcon fontSize="small" sx={{ color: 'primary.main' }} /> PROCESANDO
                 </MenuItem>
                 <MenuItem value="SHIPPED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <LocalShippingIcon fontSize="small" sx={{ color: '#0070f3' }} /> ENVIADO
+                  <LocalShippingIcon fontSize="small" sx={{ color: 'info.main' }} /> ENVIADO
                 </MenuItem>
                 <MenuItem value="DELIVERED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CheckCircleIcon fontSize="small" sx={{ color: '#008a00' }} /> ENTREGADO
+                  <CheckCircleIcon fontSize="small" sx={{ color: 'success.main' }} /> ENTREGADO
                 </MenuItem>
                 <MenuItem value="CANCELLED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CancelIcon fontSize="small" sx={{ color: '#d32f2f' }} /> CANCELADO
+                  <CancelIcon fontSize="small" sx={{ color: 'error.main' }} /> CANCELADO
                 </MenuItem>
               </Select>
             </FormControl>

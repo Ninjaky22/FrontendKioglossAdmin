@@ -106,7 +106,7 @@ export default function UserShow() {
             {user.recentOrders && user.recentOrders.length > 0 ? (
               <Stack spacing={2}>
                 {user.recentOrders.map((order: any) => (
-                  <Box key={order.id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 1.5, border: '1px solid #eee', borderRadius: 1 }}>
+                  <Box key={order.id} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
                     <Box>
                       <Typography variant="subtitle2">Pedido #{order.id}</Typography>
                       <Typography variant="body2" color="text.secondary">{order.date}</Typography>

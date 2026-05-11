@@ -54,12 +54,18 @@ export default function DashboardLayout() {
         position: 'relative',
         display: 'flex',
         overflow: 'hidden',
-        height: '100vh',
+        height: '200vh',
         width: '100%',
       }}
     >
       <DashboardHeader
-        logo={<img src="src\assets\logoPag.png" alt="Sitemark Logo" style={{ height: 80, width: 220, marginRight: 16 }} />}
+        logo={(
+          <img
+            src="src/assets/logoPag.png"
+            alt="Sitemark Logo"
+            style={{ height: 50, width: 'auto', marginRight: 12 }}
+          />
+        )}
         title=""
         menuOpen={isNavigationExpanded}
         onToggleMenu={handleToggleHeaderMenu}

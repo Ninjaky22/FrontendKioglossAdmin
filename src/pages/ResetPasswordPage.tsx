@@ -187,7 +187,7 @@ export default function ResetPasswordPage(props: { disableCustomTheme?: boolean 
       <SignInContainer direction="column">
         <ColorModeSelect sx={{ position: 'fixed', top: '1rem', right: '1rem' }} />
         <Card variant="outlined">
-          <Box sx={{ height: 6, backgroundColor: '#610361' }} />
+          <Box sx={{ height: 6, backgroundColor: 'primary.main' }} />
           <Box sx={{ px: 4, py: 2 }}>
             <Box sx={{ textAlign: 'center', mb: 1.5 }}>
               <Box
@@ -195,12 +195,15 @@ export default function ResetPasswordPage(props: { disableCustomTheme?: boolean 
                   width: 44,
                   height: 44,
                   borderRadius: 3,
-                  backgroundColor: '#610361',
+                  backgroundColor: 'primary.main',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   margin: '0 auto 8px',
-                  boxShadow: '0 10px 22px rgba(97, 3, 97, 0.35)',
+                  boxShadow: (theme) =>
+                    theme.palette.mode === 'dark'
+                      ? '0 10px 22px rgba(0, 0, 0, 0.45)'
+                      : '0 10px 22px rgba(97, 3, 97, 0.35)',
                 }}
               >
                 <LockReset sx={{ color: '#fff', fontSize: 22 }} />
@@ -208,7 +211,13 @@ export default function ResetPasswordPage(props: { disableCustomTheme?: boolean 
               <Typography
                 component="h1"
                 variant="h5"
-                sx={{ fontWeight: 800, color: '#610361' }}
+                sx={{
+                  fontWeight: 800,
+                  color: (theme) =>
+                    theme.palette.mode === 'dark'
+                      ? theme.palette.primary.light
+                      : theme.palette.primary.dark,
+                }}
               >
                 Nueva contraseña
               </Typography>

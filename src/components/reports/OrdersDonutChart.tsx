@@ -2,6 +2,7 @@ import * as React from 'react';
 import type { ApexOptions } from 'apexcharts';
 import ReactApexChart from 'react-apexcharts';
 import type { OrderStatusDistribution } from '../../models/report.model';
+import { useTheme } from '@mui/material/styles';
 
 export interface OrdersDonutChartProps {
   data: OrderStatusDistribution[];
@@ -43,6 +44,10 @@ const percentageFormatter = new Intl.NumberFormat('es-CO', {
 });
 
 export default function OrdersDonutChart({ data }: OrdersDonutChartProps) {
+  const theme = useTheme();
+  const textPrimary = theme.palette.text.primary;
+  const textSecondary = theme.palette.text.secondary;
+
   const labels = React.useMemo(
     () =>
       data.map((item) => {
@@ -74,7 +79,7 @@ export default function OrdersDonutChart({ data }: OrdersDonutChartProps) {
       height: 380,
       toolbar: { show: false },
       fontFamily: "'Winky Sans', sans-serif",
-      foreColor: '#4b5563',
+      foreColor: textSecondary,
     },
     labels,
     colors,
@@ -118,15 +123,16 @@ export default function OrdersDonutChart({ data }: OrdersDonutChartProps) {
       },
     },
     tooltip: {
+      theme: theme.palette.mode === 'dark' ? 'dark' : 'light',
       custom: ({ seriesIndex }: { seriesIndex: number }) => {
         const point = data[seriesIndex];
         if (!point) return '';
         const label = statusLabelMap[normalizeStatus(point.status)] ?? point.status;
         return `
           <div style="padding: 10px 12px; font-family: 'Winky Sans', sans-serif;">
-            <div style="font-weight: 600; margin-bottom: 4px; color: #111827;">${label}</div>
-            <div style="color: #4b5563; font-size: 12px;">Cantidad: <strong>${point.count}</strong></div>
-            <div style="color: #4b5563; font-size: 12px;">Porcentaje: <strong>${percentageFormatter.format(
+            <div style="font-weight: 600; margin-bottom: 4px; color: ${textPrimary};">${label}</div>
+            <div style="color: ${textSecondary}; font-size: 12px;">Cantidad: <strong>${point.count}</strong></div>
+            <div style="color: ${textSecondary}; font-size: 12px;">Porcentaje: <strong>${percentageFormatter.format(
               point.percentage,
             )}%</strong></div>
           </div>

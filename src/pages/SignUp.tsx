@@ -227,7 +227,7 @@ export default function SignUp() {
           }}
         />
         <Card variant="outlined">
-          <Box sx={{ height: 6, backgroundColor: '#610361' }} />
+          <Box sx={{ height: 6, backgroundColor: 'primary.main' }} />
 
           <Box sx={{ px: 4, py: 2 }}>
           
@@ -237,12 +237,15 @@ export default function SignUp() {
                   width: 44,
                   height: 44,
                   borderRadius: 3,
-                  backgroundColor: '#610361',
+                  backgroundColor: 'primary.main',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   margin: '0 auto 8px',
-                  boxShadow: '0 10px 22px rgba(97, 3, 97, 0.35)',
+                  boxShadow: (theme) =>
+                    theme.palette.mode === 'dark'
+                      ? '0 10px 22px rgba(0, 0, 0, 0.45)'
+                      : '0 10px 22px rgba(97, 3, 97, 0.35)',
                 }}
               >
                 <PersonAdd sx={{ color: '#fff', fontSize: 20 }} />
@@ -250,7 +253,14 @@ export default function SignUp() {
               <Typography
                 component="h1"
                 variant="h5"
-                sx={{ fontWeight: 800, color: '#610361', lineHeight: 1.2 }}
+                sx={{
+                  fontWeight: 800,
+                  color: (theme) =>
+                    theme.palette.mode === 'dark'
+                      ? theme.palette.primary.light
+                      : theme.palette.primary.dark,
+                  lineHeight: 1.2,
+                }}
               >
                 Regístrate
               </Typography>
@@ -389,7 +399,10 @@ export default function SignUp() {
                   textAlign: 'center',
                   fontWeight: 700,
                   fontSize: '18px',                
-                  color: '#610361',
+                  color: (theme) =>
+                    theme.palette.mode === 'dark'
+                      ? theme.palette.primary.light
+                      : theme.palette.primary.dark,
                   gridColumn: '1 / -1',
                 }}
               >
@@ -458,8 +471,8 @@ export default function SignUp() {
                 startIcon={isLoading ? <CircularProgress size={18} color="inherit" /> : null}
                 sx={{
                   gridColumn: '1 / -1',
-                  backgroundColor: '#610361',
-                  '&:hover': { backgroundColor: '#4a024a' },
+                  backgroundColor: 'primary.main',
+                  '&:hover': { backgroundColor: 'primary.dark' },
                   fontWeight: 700,
                   letterSpacing: 1,
                   py: 1,

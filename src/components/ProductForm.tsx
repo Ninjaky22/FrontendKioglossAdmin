@@ -214,7 +214,7 @@ const VariantBuilder = React.memo(({ initialVariants, variantTypes, productImage
               const selectedImage = productImages.find(img => img.url === v.imageUrl) || null;
 
               return (
-                <Box key={idx} sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap', p: 2, border: '1px solid #eee', borderRadius: 1 }}>
+                <Box key={idx} sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap', p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
                   <Typography variant="caption" sx={{ color: 'text.secondary', minWidth: 20 }}>#{idx + 1}</Typography>
 
                   {activeTypes.map(type => {

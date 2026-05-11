@@ -149,7 +149,7 @@ export default function ColorList() {
         width: 80,
         renderCell: ({ value }) => (
           <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
-            <Box sx={{ width: 28, height: 28, borderRadius: 1, backgroundColor: value || '#ccc', border: '1px solid #ddd' }} />
+            <Box sx={{ width: 28, height: 28, borderRadius: 1, backgroundColor: value || 'action.hover', border: '1px solid', borderColor: 'divider' }} />
           </Box>
         ),
       },

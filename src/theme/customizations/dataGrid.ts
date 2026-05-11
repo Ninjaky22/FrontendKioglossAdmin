@@ -20,12 +20,29 @@ export const dataGridCustomizations: DataGridProComponents<Theme> & DataGridProC
         overflow: 'clip',
         borderColor: (theme.vars || theme).palette.divider,
         backgroundColor: (theme.vars || theme).palette.background.default,
+        color: (theme.vars || theme).palette.text.primary,
         [`& .${gridClasses.columnHeader}`]: {
           backgroundColor: (theme.vars || theme).palette.background.paper,
         },
+        [`& .${gridClasses.columnHeaderTitle}`]: {
+          color: (theme.vars || theme).palette.text.primary,
+        },
+        [`& .${gridClasses.cell}`]: {
+          color: (theme.vars || theme).palette.text.primary,
+        },
         [`& .${gridClasses.footerContainer}`]: {
           backgroundColor: (theme.vars || theme).palette.background.paper,
+          overflow: 'hidden',
         },
+        ...theme.applyStyles('dark', {
+          color: '#ffffff',
+          [`& .${gridClasses.columnHeaderTitle}`]: {
+            color: '#ffffff',
+          },
+          [`& .${gridClasses.cell}`]: {
+            color: '#ffffff',
+          },
+        }),
         [`& .${checkboxClasses.root}`]: {
           padding: theme.spacing(0.5),
           '& > svg': {
@@ -34,6 +51,16 @@ export const dataGridCustomizations: DataGridProComponents<Theme> & DataGridProC
         },
         [`& .${tablePaginationClasses.root}`]: {
           marginRight: theme.spacing(1),
+          color: (theme.vars || theme).palette.text.primary,
+          '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+            color: (theme.vars || theme).palette.text.primary,
+          },
+          '& .MuiTablePagination-select, & .MuiTablePagination-selectIcon': {
+            color: (theme.vars || theme).palette.text.primary,
+          },
+          '& .MuiTablePagination-toolbar': {
+            overflow: 'hidden',
+          },
           '& .MuiIconButton-root': {
             maxHeight: 32,
             maxWidth: 32,
@@ -42,6 +69,17 @@ export const dataGridCustomizations: DataGridProComponents<Theme> & DataGridProC
             },
           },
         },
+        ...theme.applyStyles('dark', {
+          [`& .${tablePaginationClasses.root}`]: {
+            color: '#ffffff',
+            '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+              color: '#ffffff',
+            },
+            '& .MuiTablePagination-select, & .MuiTablePagination-selectIcon': {
+              color: '#ffffff',
+            },
+          },
+        }),
       }),
       cell: ({ theme }) => ({ borderTopColor: (theme.vars || theme).palette.divider }),
       menu: ({ theme }) => ({

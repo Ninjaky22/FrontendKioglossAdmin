@@ -88,6 +88,9 @@ export default function DashboardHeader({
       position="absolute"
       sx={{
         displayPrint: 'none',
+        left: 0,
+        right: 0,
+        width: '100%',
         background: 'linear-gradient(135deg, #4a024a 0%, #610361 45%, #8b0d6f 100%)',
         color: '#ffffff',
         borderBottomColor: 'rgba(255, 255, 255, 0.18)',
@@ -118,7 +121,7 @@ export default function DashboardHeader({
           }}
         >
           <Stack direction="row" alignItems="center">
-            <Box sx={{ mr: 1 }}>{getMenuIcon(menuOpen)}</Box>
+            <Box sx={{ mr: 5 }}>{getMenuIcon(menuOpen)}</Box>
             <Link to="/" style={{ textDecoration: 'none' }}>
               <Stack direction="row" alignItems="center">
                 {logo ? <LogoContainer>{logo}</LogoContainer> : null}

@@ -2,6 +2,7 @@ import * as React from 'react';
 import type { ApexOptions } from 'apexcharts';
 import ReactApexChart from 'react-apexcharts';
 import type { SalesByDay } from '../../models/report.model';
+import { alpha, useTheme } from '@mui/material/styles';
 
 export interface SalesLineChartProps {
   data: SalesByDay[];
@@ -26,6 +27,11 @@ const formatTooltipDate = (date: string) =>
   });
 
 export default function SalesLineChart({ data }: SalesLineChartProps) {
+  const theme = useTheme();
+  const textPrimary = theme.palette.text.primary;
+  const textSecondary = theme.palette.text.secondary;
+  const gridColor = alpha(theme.palette.divider, 0.6);
+
   const categories = React.useMemo(
     () => data.map((item) => formatChartDate(item.date)),
     [data],
@@ -47,7 +53,7 @@ export default function SalesLineChart({ data }: SalesLineChartProps) {
       height: 380,
       toolbar: { show: false },
       fontFamily: "'Winky Sans', sans-serif",
-      foreColor: '#4b5563',
+      foreColor: textSecondary,
     },
     stroke: {
       curve: 'smooth',
@@ -85,23 +91,24 @@ export default function SalesLineChart({ data }: SalesLineChartProps) {
       },
     },
     grid: {
-      borderColor: 'rgba(17, 24, 39, 0.08)',
+      borderColor: gridColor,
       strokeDashArray: 4,
       padding: { left: 12, right: 12 },
     },
     tooltip: {
+      theme: theme.palette.mode === 'dark' ? 'dark' : 'light',
       custom: ({ dataPointIndex }) => {
         const point = data[dataPointIndex];
         if (!point) return '';
         return `
           <div style="padding: 10px 12px; font-family: 'Winky Sans', sans-serif;">
-            <div style="font-weight: 600; margin-bottom: 4px; color: #111827;">${formatTooltipDate(
+            <div style="font-weight: 600; margin-bottom: 4px; color: ${textPrimary};">${formatTooltipDate(
               point.date,
             )}</div>
-            <div style="color: #4b5563; font-size: 12px;">Total: <strong>${currencyFormatter.format(
+            <div style="color: ${textSecondary}; font-size: 12px;">Total: <strong>${currencyFormatter.format(
               point.totalAmount,
             )}</strong></div>
-            <div style="color: #4b5563; font-size: 12px;">Órdenes: <strong>${point.totalOrders}</strong></div>
+            <div style="color: ${textSecondary}; font-size: 12px;">Órdenes: <strong>${point.totalOrders}</strong></div>
           </div>
         `;
       },

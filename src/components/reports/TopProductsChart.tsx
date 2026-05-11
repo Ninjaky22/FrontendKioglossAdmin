@@ -2,6 +2,7 @@ import * as React from 'react';
 import type { ApexOptions } from 'apexcharts';
 import ReactApexChart from 'react-apexcharts';
 import type { TopProduct } from '../../models/report.model';
+import { alpha, useTheme } from '@mui/material/styles';
 
 export interface TopProductsChartProps {
   data: TopProduct[];
@@ -63,6 +64,11 @@ const currencyFormatter = new Intl.NumberFormat('es-CO', {
 });
 
 export default function TopProductsChart({ data }: TopProductsChartProps) {
+  const theme = useTheme();
+  const textPrimary = theme.palette.text.primary;
+  const textSecondary = theme.palette.text.secondary;
+  const gridColor = alpha(theme.palette.divider, 0.6);
+
   const labels = React.useMemo(
     () => data.map((item) => truncateLabel(item.productTitle)),
     [data],
@@ -86,7 +92,7 @@ export default function TopProductsChart({ data }: TopProductsChartProps) {
       height: 380,
       toolbar: { show: false },
       fontFamily: "'Winky Sans', sans-serif",
-      foreColor: '#4b5563',
+      foreColor: textSecondary,
     },
     plotOptions: {
       bar: {
@@ -122,19 +128,20 @@ export default function TopProductsChart({ data }: TopProductsChartProps) {
       },
     },
     grid: {
-      borderColor: 'rgba(17, 24, 39, 0.08)',
+      borderColor: gridColor,
       strokeDashArray: 4,
       padding: { left: 12, right: 12 },
     },
     tooltip: {
+      theme: theme.palette.mode === 'dark' ? 'dark' : 'light',
       custom: ({ dataPointIndex }) => {
         const point = data[dataPointIndex];
         if (!point) return '';
         return `
           <div style="padding: 10px 12px; font-family: 'Winky Sans', sans-serif;">
-            <div style="font-weight: 600; margin-bottom: 4px; color: #111827;">${point.productTitle}</div>
-            <div style="color: #4b5563; font-size: 12px;">Cantidad: <strong>${point.totalQuantitySold}</strong></div>
-            <div style="color: #4b5563; font-size: 12px;">Ingresos: <strong>${currencyFormatter.format(
+            <div style="font-weight: 600; margin-bottom: 4px; color: ${textPrimary};">${point.productTitle}</div>
+            <div style="color: ${textSecondary}; font-size: 12px;">Cantidad: <strong>${point.totalQuantitySold}</strong></div>
+            <div style="color: ${textSecondary}; font-size: 12px;">Ingresos: <strong>${currencyFormatter.format(
               point.totalRevenue,
             )}</strong></div>
           </div>

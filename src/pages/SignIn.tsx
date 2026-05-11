@@ -201,7 +201,7 @@ export default function SignIn() {
       <SignInContainer direction="column">
         <ColorModeSelect sx={{ position: 'fixed', top: '1rem', right: '1rem' }} />
         <Card variant="outlined">
-          <Box sx={{ height: 6, backgroundColor: '#610361' }} />
+          <Box sx={{ height: 6, backgroundColor: 'primary.main' }} />
           <Box sx={{ px: 4, py: 3 }}>
             <Box sx={{ textAlign: 'center', mb: 3 }}>
               <Box
@@ -209,12 +209,15 @@ export default function SignIn() {
                   width: 48,
                   height: 48,
                   borderRadius: 3,
-                  backgroundColor: '#610361',
+                  backgroundColor: 'primary.main',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   margin: '0 auto 12px',
-                  boxShadow: '0 10px 22px rgba(97, 3, 97, 0.35)',
+                  boxShadow: (theme) =>
+                    theme.palette.mode === 'dark'
+                      ? '0 10px 22px rgba(0, 0, 0, 0.45)'
+                      : '0 10px 22px rgba(97, 3, 97, 0.35)',
                 }}
               >
                 <Person sx={{ color: '#fff' }} />
@@ -222,7 +225,13 @@ export default function SignIn() {
               <Typography
                 component="h1"
                 variant="h4"
-                sx={{ fontWeight: 800, color: '#610361' }}
+                sx={{
+                  fontWeight: 800,
+                  color: (theme) =>
+                    theme.palette.mode === 'dark'
+                      ? theme.palette.primary.light
+                      : theme.palette.primary.dark,
+                }}
               >
                 Inicio Sesión
               </Typography>

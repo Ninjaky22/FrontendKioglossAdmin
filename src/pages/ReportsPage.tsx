@@ -18,12 +18,6 @@ import OrdersDonutChart from '../components/reports/OrdersDonutChart';
 import ExportCSVButton from '../components/reports/ExportCSVButton';
 import useReports from '../hooks/useReports';
 
-const reportCssVars = {
-  '--color-primary': '#610361',
-  '--color-secondary': '#9b30a0',
-  '--color-accent': '#a21caf',
-} as const;
-
 const currencyFormatter = new Intl.NumberFormat('es-CO', {
   style: 'currency',
   currency: 'COP',
@@ -92,8 +86,22 @@ export default function ReportsPage() {
       }}
     >
       <GlobalStyles
-        styles={{
-          ':root': reportCssVars,
+        styles={(theme) => {
+          const darkSelector = theme.getColorSchemeSelector
+            ? theme.getColorSchemeSelector('dark')
+            : '[data-mui-color-scheme="dark"]';
+          return {
+            ':root': {
+              '--color-primary': theme.palette.primary.dark,
+              '--color-secondary': theme.palette.primary.main,
+              '--color-accent': theme.palette.primary.light,
+            },
+            [darkSelector]: {
+              '--color-primary': theme.palette.primary.main,
+              '--color-secondary': theme.palette.primary.light,
+              '--color-accent': theme.palette.primary.light,
+            },
+          };
         }}
       />
       <Stack spacing={3}>

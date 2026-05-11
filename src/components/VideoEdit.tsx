@@ -14,7 +14,7 @@ import PageContainer from './PageContainer';
 import type { UpdateVideoRequest } from '../models/VideoReel';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
-import { ThemeProvider, createTheme, useTheme } from '@mui/material/styles';
+import { ThemeProvider, createTheme, useTheme, alpha } from '@mui/material/styles';
 
 const validateVideo = (values: Partial<UpdateVideoRequest & { productId: number }>) => {
   const errors: Partial<Record<string, string>> = {};
@@ -45,7 +45,7 @@ export default function VideoEdit() {
             styleOverrides: {
               root: {
                 borderRadius: '12px',
-                backgroundColor: '#fdf4ff',
+                backgroundColor: alpha(parentTheme.palette.primary.main, parentTheme.palette.mode === 'dark' ? 0.2 : 0.08),
                 outline: 'none',
                 '& .MuiOutlinedInput-notchedOutline': {
                   border: 'none',
@@ -75,8 +75,10 @@ export default function VideoEdit() {
                 PaperProps: {
                   sx: {
                     borderRadius: '12px',
-                    border: '1px solid #f0d6fb',
-                    boxShadow: '0 10px 40px -10px rgba(155, 48, 160, 0.1)',
+                    border: `1px solid ${parentTheme.palette.divider}`,
+                    boxShadow: parentTheme.palette.mode === 'dark'
+                      ? '0 16px 40px rgba(0, 0, 0, 0.45)'
+                      : '0 10px 40px -10px rgba(155, 48, 160, 0.12)',
                     mt: 1,
                     '& .MuiMenuItem-root': {
                       borderRadius: '8px',
@@ -85,12 +87,12 @@ export default function VideoEdit() {
                       padding: '8px 12px',
                       outline: 'none',
                       '&:focus, &:focus-visible': { outline: 'none' },
-                      '&:hover': { backgroundColor: '#fdf4ff' },
+                      '&:hover': { backgroundColor: parentTheme.palette.action.hover },
                       '&.Mui-selected': {
-                        backgroundColor: '#fce4ff',
-                        color: '#610361',
+                        backgroundColor: parentTheme.palette.action.selected,
+                        color: parentTheme.palette.mode === 'dark' ? parentTheme.palette.primary.light : parentTheme.palette.primary.dark,
                         fontWeight: 600,
-                        '&:hover': { backgroundColor: '#f0d6fb' },
+                        '&:hover': { backgroundColor: parentTheme.palette.action.selected },
                       },
                     },
                   },

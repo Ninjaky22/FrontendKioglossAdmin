@@ -3,6 +3,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { alpha, useTheme } from '@mui/material/styles';
 
 export interface KpiCardProps {
   title: string;
@@ -21,6 +22,8 @@ export default function KpiCard({
   color,
   trend,
 }: KpiCardProps) {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
   const accentColor = color ?? 'var(--color-primary)';
   const showTrend = typeof trend === 'number' && trend !== 0;
   const trendIsPositive = (trend ?? 0) > 0;
@@ -33,11 +36,16 @@ export default function KpiCard({
       sx={{
         height: '100%',
         borderRadius: 3,
-        border: '1px solid #f0d6fb',
+        border: '1px solid',
+        borderColor: theme.palette.divider,
         borderLeft: '4px solid',
         borderLeftColor: accentColor,
-        boxShadow: '0 8px 18px -12px rgba(97, 3, 97, 0.35)',
-        background: 'linear-gradient(145deg, #ffffff 0%, #faf5ff 100%)',
+        boxShadow: isDark
+          ? '0 14px 26px rgba(0, 0, 0, 0.35)'
+          : '0 8px 18px -12px rgba(97, 3, 97, 0.35)',
+        background: isDark
+          ? `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.default, 0.95)} 100%)`
+          : 'linear-gradient(145deg, #ffffff 0%, #faf5ff 100%)',
         fontFamily: "'Winky Sans', sans-serif",
       }}
     >
@@ -80,7 +88,9 @@ export default function KpiCard({
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 0.5,
-                color: trendIsPositive ? '#16a34a' : '#dc2626',
+                color: trendIsPositive
+                  ? theme.palette.success.main
+                  : theme.palette.error.main,
                 fontWeight: 600,
                 fontFamily: "'Winky Sans', sans-serif",
               }}
@@ -113,7 +123,7 @@ export default function KpiCard({
               display: 'grid',
               placeItems: 'center',
               color: accentColor,
-              backgroundColor: 'rgba(155, 48, 160, 0.12)',
+              backgroundColor: alpha(theme.palette.primary.main, isDark ? 0.2 : 0.12),
               flexShrink: 0,
             }}
           >

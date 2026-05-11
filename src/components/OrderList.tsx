@@ -17,6 +17,8 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import InventoryIcon from '@mui/icons-material/Inventory'; // Para "Todos"
+import { alpha, useColorScheme, useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import {
   DataGrid,
   GridActionsCellItem,
@@ -40,15 +42,6 @@ import type { OrderSummaryDTO, CustomerBasicDTO } from '../models/Order';
 
 const INITIAL_PAGE_SIZE = 10;
 
-// Configuración de colores para los estados (Aesthetics)
-const STATUS_CONFIG = {
-  PENDING: { label: 'Pendiente', color: '#af5f00', bg: '#fff8e1', icon: <TimerIcon /> },
-  PROCESSING: { label: 'Procesando', color: '#9b30a0', bg: '#fce4ff', icon: <SettingsIcon /> },
-  SHIPPED: { label: 'Enviado', color: '#0070f3', bg: '#e6f2ff', icon: <LocalShippingIcon /> },
-  DELIVERED: { label: 'Entregado', color: '#008a00', bg: '#e8f5e9', icon: <CheckCircleIcon /> },
-  CANCELLED: { label: 'Cancelado', color: '#d32f2f', bg: '#ffebee', icon: <CancelIcon /> },
-} as const;
-
 const STATUS_VARIANTS: Record<string, { canonical: keyof typeof STATUS_CONFIG; label?: string }> = {
   PENDING: { canonical: 'PENDING' },
   PENDIENTE: { canonical: 'PENDING', label: 'Pendiente' },
@@ -68,32 +61,6 @@ const STATUS_VARIANTS: Record<string, { canonical: keyof typeof STATUS_CONFIG; l
   CANCELADOS: { canonical: 'CANCELLED', label: 'Cancelados' },
 };
 
-const menuPropsStyles = {
-  PaperProps: {
-    sx: {
-      borderRadius: '12px',
-      border: '1px solid #f0d6fb',
-      boxShadow: '0 10px 40px -10px rgba(155, 48, 160, 0.1)',
-      mt: 1,
-      '& .MuiMenuItem-root': {
-        borderRadius: '8px',
-        mx: 1,
-        mb: 0.5,
-        padding: '8px 12px',
-        outline: 'none',
-        '&:focus, &:focus-visible': { outline: 'none' },
-        '&:hover': { backgroundColor: '#fdf4ff' },
-        '&.Mui-selected': {
-          backgroundColor: '#fce4ff',
-          color: '#610361',
-          fontWeight: 600,
-          '&:hover': { backgroundColor: '#f0d6fb' },
-        },
-      },
-    },
-  },
-};
-
 const normalizeStatus = (status: string) =>
   status
     ? status
@@ -103,19 +70,6 @@ const normalizeStatus = (status: string) =>
         .toUpperCase()
         .replace(/\s+/g, '_')
     : '';
-
-const getStatusConfig = (status: string) => {
-  const normalizedStatus = normalizeStatus(status);
-  const variant = STATUS_VARIANTS[normalizedStatus];
-  const canonicalKey = variant?.canonical ?? (normalizedStatus as keyof typeof STATUS_CONFIG);
-  const baseConfig = STATUS_CONFIG[canonicalKey];
-
-  if (baseConfig) {
-    return { ...baseConfig, label: variant?.label ?? baseConfig.label };
-  }
-
-  return { label: status, color: '#666', bg: '#f5f5f5', icon: <InventoryIcon /> };
-};
 
 type OrderRow = OrderSummaryDTO & {
   user?: {
@@ -134,7 +88,105 @@ type PaginationDisplayedRowsParams = {
 };
 
 export default function OrderList() {
+  const theme = useTheme();
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const { mode } = useColorScheme();
+  const paletteMode = !mode || mode === 'system' ? (prefersDarkMode ? 'dark' : 'light') : mode;
+  const isDark = paletteMode === 'dark';
+  const accentText = isDark ? theme.palette.common.white : theme.palette.primary.dark;
+  const accentSoft = alpha(theme.palette.primary.main, isDark ? 0.2 : 0.08);
+  const listTextColor = isDark ? theme.palette.common.white : theme.palette.text.primary;
+
   const { pathname } = useLocation();
+    const statusConfig = React.useMemo(
+      () => ({
+        PENDING: {
+          label: 'Pendiente',
+          color: theme.palette.warning.main,
+          bg: alpha(theme.palette.warning.main, isDark ? 0.22 : 0.12),
+          icon: <TimerIcon />,
+        },
+        PROCESSING: {
+          label: 'Procesando',
+          color: theme.palette.primary.main,
+          bg: alpha(theme.palette.primary.main, isDark ? 0.22 : 0.12),
+          icon: <SettingsIcon />,
+        },
+        SHIPPED: {
+          label: 'Enviado',
+          color: theme.palette.info.main,
+          bg: alpha(theme.palette.info.main, isDark ? 0.22 : 0.12),
+          icon: <LocalShippingIcon />,
+        },
+        DELIVERED: {
+          label: 'Entregado',
+          color: theme.palette.success.main,
+          bg: alpha(theme.palette.success.main, isDark ? 0.22 : 0.12),
+          icon: <CheckCircleIcon />,
+        },
+        CANCELLED: {
+          label: 'Cancelado',
+          color: theme.palette.error.main,
+          bg: alpha(theme.palette.error.main, isDark ? 0.22 : 0.12),
+          icon: <CancelIcon />,
+        },
+      }),
+      [theme.palette, isDark],
+    );
+
+    const menuPropsStyles = React.useMemo(
+      () => ({
+        PaperProps: {
+          sx: {
+            borderRadius: '12px',
+            border: `1px solid ${theme.palette.divider}`,
+            boxShadow: isDark
+              ? '0 16px 40px rgba(0, 0, 0, 0.45)'
+              : '0 10px 40px -10px rgba(155, 48, 160, 0.12)',
+            mt: 1,
+            backgroundColor: theme.palette.background.paper,
+            '& .MuiMenuItem-root': {
+              borderRadius: '8px',
+              mx: 1,
+              mb: 0.5,
+              padding: '8px 12px',
+              outline: 'none',
+              '&:focus, &:focus-visible': { outline: 'none' },
+              '&:hover': { backgroundColor: theme.palette.action.hover },
+              '&.Mui-selected': {
+                backgroundColor: theme.palette.action.selected,
+                color: theme.palette.text.primary,
+                fontWeight: 600,
+                '&:hover': { backgroundColor: theme.palette.action.selected },
+              },
+            },
+          },
+        },
+      }),
+      [theme.palette, isDark],
+    );
+
+    const getStatusConfig = React.useCallback(
+      (status: string) => {
+        const normalizedStatus = normalizeStatus(status);
+        const variant = STATUS_VARIANTS[normalizedStatus];
+        const canonicalKey =
+          variant?.canonical ?? (normalizedStatus as keyof typeof statusConfig);
+        const baseConfig = statusConfig[canonicalKey];
+
+        if (baseConfig) {
+          return { ...baseConfig, label: variant?.label ?? baseConfig.label };
+        }
+
+        return {
+          label: status,
+          color: theme.palette.text.secondary,
+          bg: alpha(theme.palette.text.primary, isDark ? 0.14 : 0.06),
+          icon: <InventoryIcon />,
+        };
+      },
+      [statusConfig, theme.palette, isDark],
+    );
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const dispatch = useDispatch<any>();
@@ -186,7 +238,7 @@ export default function OrderList() {
         headerName: 'ORDEN', 
         width: 100,
         renderCell: (params) => (
-          <Typography variant="body2" sx={{ fontWeight: 800, color: '#610361', fontFamily: 'monospace' }}>
+          <Typography variant="body2" sx={{ fontWeight: 800, color: listTextColor, fontFamily: 'monospace' }}>
             #{params.value}
           </Typography>
         )
@@ -203,11 +255,11 @@ export default function OrderList() {
           const secondaryText = customer?.email || user?.email || user?.phoneNumber || '';
           return (
             <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', lineHeight: 1.2, minHeight: '100%' }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: '#333' }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: listTextColor }}>
                 {displayName}
               </Typography>
               {secondaryText ? (
-                <Typography variant="caption" sx={{ color: '#9b30a0', opacity: 0.8 }}>
+                <Typography variant="caption" sx={{ color: listTextColor, opacity: 0.85 }}>
                   {secondaryText}
                 </Typography>
               ) : null}
@@ -220,7 +272,7 @@ export default function OrderList() {
         headerName: 'TOTAL',
         width: 150,
         renderCell: (params) => (
-          <Typography variant="body2" sx={{ fontWeight: 700, color: '#610361' }}>
+          <Typography variant="body2" sx={{ fontWeight: 700, color: listTextColor }}>
             ${params.value?.toLocaleString('es-CO')}
           </Typography>
         ),
@@ -240,11 +292,11 @@ export default function OrderList() {
         size="small"
         sx={{
           backgroundColor: config.bg,
-          color: config.color,
+          color: isDark ? theme.palette.common.white : config.color,
           fontWeight: 700,
           fontSize: '0.75rem',
           borderRadius: '12px',
-          border: `1px solid ${config.color}33`,
+          border: `1px solid ${alpha(isDark ? theme.palette.common.white : config.color, 0.3)}`,
           // Esto asegura que el icono herede el color del texto del Chip
           '& .MuiChip-icon': { 
             color: 'inherit',
@@ -260,7 +312,7 @@ export default function OrderList() {
         headerName: 'FECHA DE REGISTRO',
         width: 220,
         renderCell: (params) => (
-          <Typography variant="body2" sx={{ color: '#666', fontSize: '0.85rem' }}>
+          <Typography variant="body2" sx={{ color: listTextColor, fontSize: '0.85rem', opacity: 0.85 }}>
             {new Date(params.value as string).toLocaleDateString('es-CO', {
                timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric',
             })}
@@ -276,16 +328,16 @@ export default function OrderList() {
           <GridActionsCellItem
             icon={
               <Tooltip title="Ver Detalles">
-                <Box sx={{ 
-                  backgroundColor: '#ffffff', 
-                  p: 0.8, 
-                  borderRadius: 2, 
-                  display: 'flex',
-                  transition: '0.2s',
-                  '&:hover': { backgroundColor: '#9b30a0', color: '#fff' }
-                }}>
-                  <VisibilityIcon fontSize="small" />
-                </Box>
+                <span>
+                  <VisibilityIcon
+                    fontSize="small"
+                    sx={{
+                      color: isDark
+                        ? theme.palette.primary.light
+                        : theme.palette.primary.main,
+                    }}
+                  />
+                </span>
               </Tooltip>
             }
             label="Ver Detalle"
@@ -294,7 +346,7 @@ export default function OrderList() {
         ],
       },
     ],
-    [navigate]
+    [navigate, listTextColor, isDark, theme.palette]
   );
 
   return (
@@ -304,9 +356,11 @@ export default function OrderList() {
         sx={{ 
           p: { xs: 2, md: 4 }, 
           borderRadius: '24px', 
-          border: '1px solid #f0d6fb',
-          boxShadow: '0 10px 40px -10px rgba(155, 48, 160, 0.05)',
-          backgroundColor: '#ffffff',
+          border: isDark ? '1px solid rgba(255, 255, 255, 0.12)' : `1px solid ${theme.palette.divider}`,
+          boxShadow: isDark
+            ? '0 18px 40px rgba(0, 0, 0, 0.35)'
+            : '0 10px 40px -10px rgba(155, 48, 160, 0.08)',
+          backgroundColor: isDark ? '#0f0d16' : theme.palette.background.paper,
           overflow: 'hidden',
           maxWidth: '100%' 
         }}
@@ -322,14 +376,14 @@ export default function OrderList() {
              <Box sx={{ 
                 p: 1.5, 
                 borderRadius: 3, 
-                backgroundColor: '#fdf4ff', 
-                color: '#9b30a0',
+               backgroundColor: accentSoft, 
+               color: theme.palette.primary.main,
                 display: { xs: 'none', md: 'flex' }
              }}>
                 <ShoppingBagIcon />
              </Box>
              <Box>
-                <Typography variant="h6" sx={{ fontWeight: 800, color: '#610361', lineHeight: 1.2 }}>
+               <Typography variant="h6" sx={{ fontWeight: 800, color: accentText, lineHeight: 1.2 }}>
                    Listado de Pedidos
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
@@ -340,7 +394,7 @@ export default function OrderList() {
 
           <Stack direction="row" spacing={2} alignItems="center">
             <FormControl size="small" sx={{ minWidth: 220 }}>
-  <InputLabel sx={{ color: '#9b30a0' }}>Filtrar por Estado</InputLabel>
+  <InputLabel sx={{ color: isDark ? theme.palette.common.white : theme.palette.primary.main }}>Filtrar por Estado</InputLabel>
   <Select 
   value={statusFilter}
   label="Filtrar por Estado"
@@ -348,7 +402,7 @@ export default function OrderList() {
   MenuProps={menuPropsStyles}
   sx={{ 
     borderRadius: '12px', 
-    backgroundColor: '#fdf4ff',
+    backgroundColor: accentSoft,
     
     // ELIMINACIÓN TOTAL DE BORDES
     '& .MuiOutlinedInput-notchedOutline': {
@@ -381,22 +435,22 @@ export default function OrderList() {
   }}
 >
   <MenuItem value="ALL" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-    <InventoryIcon fontSize="small" sx={{ color: '#9b30a0' }} /> Todos los pedidos
+    <InventoryIcon fontSize="small" sx={{ color: theme.palette.primary.main }} /> Todos los pedidos
   </MenuItem>
   <MenuItem value="PENDING" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-    <TimerIcon fontSize="small" sx={{ color: '#af5f00' }} /> Pendientes
+    <TimerIcon fontSize="small" sx={{ color: theme.palette.warning.main }} /> Pendientes
   </MenuItem>
   <MenuItem value="PROCESSING" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-    <SettingsIcon fontSize="small" sx={{ color: '#9b30a0' }} /> En Proceso
+    <SettingsIcon fontSize="small" sx={{ color: theme.palette.primary.main }} /> En Proceso
   </MenuItem>
   <MenuItem value="SHIPPED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-    <LocalShippingIcon fontSize="small" sx={{ color: '#0070f3' }} /> Enviados
+    <LocalShippingIcon fontSize="small" sx={{ color: theme.palette.info.main }} /> Enviados
   </MenuItem>
   <MenuItem value="DELIVERED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-    <CheckCircleIcon fontSize="small" sx={{ color: '#008a00' }} /> Entregados
+    <CheckCircleIcon fontSize="small" sx={{ color: theme.palette.success.main }} /> Entregados
   </MenuItem>
   <MenuItem value="CANCELLED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-    <CancelIcon fontSize="small" sx={{ color: '#d32f2f' }} /> Cancelados
+    <CancelIcon fontSize="small" sx={{ color: theme.palette.error.main }} /> Cancelados
   </MenuItem>
 </Select>
 </FormControl>
@@ -405,10 +459,10 @@ export default function OrderList() {
               <IconButton 
                 onClick={loadData} 
                 sx={{ 
-                  color: '#fdf4ff', 
-                  backgroundColor: '#9b30a0',
+                  color: theme.palette.getContrastText(theme.palette.primary.main),
+                  backgroundColor: theme.palette.primary.main,
                   borderRadius: '12px',
-                  '&:hover': { backgroundColor: '#fce4ff' }
+                  '&:hover': { backgroundColor: theme.palette.primary.dark }
                 }}
               >
                 <RefreshIcon />
@@ -420,10 +474,13 @@ export default function OrderList() {
         <Box sx={{ 
           width: '100%', 
           height: { xs: 550, lg: 700 },
-          '& .MuiDataGrid-root': { border: 'none' },
+          '& .MuiDataGrid-root': { border: 'none', color: listTextColor },
+          '& .MuiDataGrid-cell, & .MuiDataGrid-cellContent, & .MuiDataGrid-row': {
+            color: listTextColor,
+          },
           '& .MuiDataGrid-columnHeaders': {
-            backgroundColor: '#610361 !important',
-            color: '#ffffff',
+            backgroundColor: `${theme.palette.primary.dark} !important`,
+            color: theme.palette.getContrastText(theme.palette.primary.dark),
             borderRadius: '12px',
             borderBottom: 'none',
             fontWeight: 800,
@@ -431,15 +488,15 @@ export default function OrderList() {
             fontSize: '0.75rem',
           },
           '& .MuiDataGrid-columnHeader': {
-            backgroundColor: '#610361 !important',
+            backgroundColor: `${theme.palette.primary.dark} !important`,
           },
           '& .MuiDataGrid-columnHeaderTitle': {
-            color: '#ffffff !important',
+            color: `${theme.palette.getContrastText(theme.palette.primary.dark)} !important`,
             fontWeight: 800,
           },
           '& .MuiDataGrid-columnSeparator': {
             display: 'block',
-            color: '#ffffff',
+            color: theme.palette.getContrastText(theme.palette.primary.dark),
           },
           '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within, & .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within': {
             outline: 'none',
@@ -448,7 +505,7 @@ export default function OrderList() {
             backgroundColor: 'transparent',
           },
           '& .MuiDataGrid-columnHeader, & .MuiDataGrid-cell': {
-            borderRight: '1px solid #ffffff',
+            borderRight: `1px solid ${theme.palette.divider}`,
           },
           '& .MuiDataGrid-columnHeader:last-of-type, & .MuiDataGrid-cell:last-of-type': {
             borderRight: 'none',
@@ -459,10 +516,11 @@ export default function OrderList() {
             alignItems: 'center',
           },
           '& .MuiDataGrid-footerContainer': {
-            backgroundColor: '#fdf4ff',
+            backgroundColor: isDark ? '#121018' : theme.palette.background.paper,
             borderTop: 'none',
             borderRadius: '0 0 16px 16px',
             padding: '4px 12px',
+            overflow: 'hidden',
           },
           '& .MuiDataGrid-virtualScroller': {
             overflowX: 'hidden',
@@ -471,25 +529,29 @@ export default function OrderList() {
             display: 'none',
           },
           '& .MuiTablePagination-root, & .MuiTablePagination-displayedRows, & .MuiTablePagination-selectLabel': {
-            color: '#610361',
+            color: listTextColor,
             fontWeight: 600,
           },
           '& .MuiTablePagination-select': {
-            backgroundColor: '#ffffff',
+            backgroundColor: theme.palette.background.paper,
             borderRadius: '10px',
             padding: '4px 28px 4px 10px',
+            color: listTextColor,
+          },
+          '& .MuiTablePagination-selectIcon': {
+            color: listTextColor,
           },
           '& .MuiTablePagination-actions .MuiIconButton-root': {
-            color: '#610361',
-            backgroundColor: '#ffffff',
+            color: listTextColor,
+            backgroundColor: theme.palette.background.paper,
             borderRadius: '10px',
-            border: '1px solid #f0d6fb',
+            border: `1px solid ${theme.palette.divider}`,
             marginLeft: '4px',
-            '&:hover': { backgroundColor: '#fce4ff' },
+            '&:hover': { backgroundColor: theme.palette.action.hover },
           },
           '& .MuiTablePagination-actions .MuiIconButton-root.Mui-disabled': {
-            color: '#b58bb9',
-            borderColor: '#f7e7fb',
+            color: theme.palette.text.disabled,
+            borderColor: theme.palette.divider,
           },
         }}>
           {error ? (

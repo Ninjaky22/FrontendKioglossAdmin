@@ -21,6 +21,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import OndemandVideoIcon from '@mui/icons-material/OndemandVideo';
 import { useNavigate } from 'react-router';
+import { alpha, useColorScheme, useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { useDispatch, useSelector } from 'react-redux';
 import { useDialogs } from '../hooks/useDialogs/useDialogs';
 import useNotifications from '../hooks/useNotifications/useNotifications';
@@ -41,6 +43,15 @@ type PaginationDisplayedRowsParams = {
 };
 
 export default function VideoList() {
+  const theme = useTheme();
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const { mode } = useColorScheme();
+  const paletteMode = !mode || mode === 'system' ? (prefersDarkMode ? 'dark' : 'light') : mode;
+  const isDark = paletteMode === 'dark';
+  const accentText = isDark ? theme.palette.common.white : theme.palette.primary.dark;
+  const accentSoft = alpha(theme.palette.primary.main, isDark ? 0.2 : 0.08);
+  const listTextColor = isDark ? theme.palette.common.white : theme.palette.text.primary;
+
   const navigate = useNavigate();
   const dispatch = useDispatch<any>();
   const dialogs = useDialogs();
@@ -119,7 +130,7 @@ export default function VideoList() {
                 component="img"
                 src={params.value}
                 alt="thumb"
-                sx={{ width: 40, height: 56, objectFit: 'cover', borderRadius: '8px', border: '1px solid #f0d6fb' }}
+                sx={{ width: 40, height: 56, objectFit: 'cover', borderRadius: '8px', border: `1px solid ${theme.palette.divider}` }}
               />
             ) : (
               <PlayArrowIcon color="disabled" />
@@ -135,7 +146,7 @@ export default function VideoList() {
         align: 'center',
         headerAlign: 'center',
         renderCell: (params) => (
-          <Typography variant="body2" sx={{ fontWeight: 600, color: '#333', textAlign: 'center', width: '100%' }}>
+          <Typography variant="body2" sx={{ fontWeight: 600, color: listTextColor, textAlign: 'center', width: '100%' }}>
             {params.value}
           </Typography>
         ),
@@ -148,7 +159,7 @@ export default function VideoList() {
         align: 'center',
         headerAlign: 'center',
         renderCell: (params) => (
-          <Typography variant="body2" sx={{ color: '#666', textAlign: 'center', width: '100%' }}>
+          <Typography variant="body2" sx={{ color: listTextColor, textAlign: 'center', width: '100%', opacity: 0.85 }}>
             {params.value}
           </Typography>
         ),
@@ -160,7 +171,7 @@ export default function VideoList() {
         align: 'center',
         headerAlign: 'center',
         renderCell: (params) => (
-          <Typography variant="body2" sx={{ fontWeight: 700, color: '#610361', textAlign: 'center', width: '100%' }}>
+          <Typography variant="body2" sx={{ fontWeight: 700, color: listTextColor, textAlign: 'center', width: '100%' }}>
             {params.value ? `$${params.value.toLocaleString('es-CO')}` : '-'}
           </Typography>
         ),
@@ -172,22 +183,23 @@ export default function VideoList() {
         align: 'center',
         headerAlign: 'center',
         renderCell: (params) => {
-          if (!params.value) return <Chip label="Sin video" size="small" sx={{ backgroundColor: '#f5f5f5', color: '#9e9e9e', fontWeight: 600 }} />;
+          if (!params.value) return <Chip label="Sin video" size="small" sx={{ backgroundColor: alpha(theme.palette.text.primary, isDark ? 0.14 : 0.06), color: listTextColor, fontWeight: 600 }} />;
           let platform = 'Enlace';
-          let bg = '#e3f2fd';
           let color = '#1976d2';
           
           if (params.value.includes('youtube') || params.value.includes('youtu.be')) {
-            platform = 'YouTube'; bg = '#ffebee'; color = '#c62828';
+            platform = 'YouTube'; color = '#c62828';
           } else if (params.value.includes('tiktok')) {
-            platform = 'TikTok'; bg = '#f5f5f5'; color = '#212121';
+            platform = 'TikTok'; color = '#212121';
           } else if (params.value.includes('instagram')) {
-            platform = 'Instagram'; bg = '#fce4ec'; color = '#c2185b';
+            platform = 'Instagram'; color = '#c2185b';
           } else if (params.value.includes('facebook')) {
-            platform = 'Facebook'; bg = '#e8eaf6'; color = '#3f51b5';
+            platform = 'Facebook'; color = '#3f51b5';
           } else if (/\.(mp4|webm|ogg|mov)/i.test(params.value)) {
-            platform = 'MP4'; bg = '#fdf4ff'; color = '#9b30a0';
+            platform = 'MP4'; color = theme.palette.primary.main;
           }
+
+          const bg = alpha(color, isDark ? 0.22 : 0.12);
 
           return (
             <Chip 
@@ -195,11 +207,11 @@ export default function VideoList() {
               size="small" 
               sx={{
                 backgroundColor: bg,
-                color: color,
+                color: isDark ? theme.palette.common.white : color,
                 fontWeight: 700,
                 fontSize: '0.75rem',
                 borderRadius: '12px',
-                border: `1px solid ${color}33`,
+                border: `1px solid ${alpha(isDark ? theme.palette.common.white : color, 0.3)}`,
               }} 
             />
           );
@@ -212,7 +224,7 @@ export default function VideoList() {
         align: 'center',
         headerAlign: 'center',
         renderCell: (params) => (
-          <Typography variant="body2" sx={{ color: '#666', fontSize: '0.85rem', textAlign: 'center', width: '100%' }}>
+          <Typography variant="body2" sx={{ color: listTextColor, fontSize: '0.85rem', textAlign: 'center', width: '100%', opacity: 0.85 }}>
             {params.value ? new Date(params.value).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' }) : '-'}
           </Typography>
         ),
@@ -227,20 +239,20 @@ export default function VideoList() {
         getActions: ({ row }) => [
           <GridActionsCellItem
             key="edit"
-            icon={<EditIcon fontSize="small" sx={{ color: '#9b30a0' }} />}
+            icon={<EditIcon fontSize="small" sx={{ color: theme.palette.primary.main }} />}
             label="Editar"
             onClick={handleRowEdit(row)}
           />,
           <GridActionsCellItem
             key="delete"
-            icon={<DeleteIcon fontSize="small" sx={{ color: '#d32f2f' }} />}
+            icon={<DeleteIcon fontSize="small" sx={{ color: theme.palette.error.main }} />}
             label="Eliminar"
             onClick={handleRowDelete(row)}
           />,
         ],
       },
     ],
-    [handleRowEdit, handleRowDelete],
+    [handleRowEdit, handleRowDelete, theme.palette, accentText, isDark, accentSoft, listTextColor],
   );
 
   return (
@@ -250,9 +262,11 @@ export default function VideoList() {
         sx={{ 
           p: { xs: 2, md: 4 }, 
           borderRadius: '24px', 
-          border: '1px solid #f0d6fb',
-          boxShadow: '0 10px 40px -10px rgba(155, 48, 160, 0.05)',
-          backgroundColor: '#ffffff',
+          border: isDark ? '1px solid rgba(255, 255, 255, 0.12)' : `1px solid ${theme.palette.divider}`,
+          boxShadow: isDark
+            ? '0 18px 40px rgba(0, 0, 0, 0.35)'
+            : '0 10px 40px -10px rgba(155, 48, 160, 0.08)',
+          backgroundColor: isDark ? '#0f0d16' : theme.palette.background.paper,
           overflow: 'hidden',
           maxWidth: '100%' 
         }}
@@ -268,14 +282,14 @@ export default function VideoList() {
              <Box sx={{ 
                 p: 1.5, 
                 borderRadius: 3, 
-                backgroundColor: '#fdf4ff', 
-                color: '#9b30a0',
+               backgroundColor: accentSoft, 
+               color: theme.palette.primary.main,
                 display: { xs: 'none', md: 'flex' }
              }}>
                 <OndemandVideoIcon />
              </Box>
              <Box>
-                <Typography variant="h6" sx={{ fontWeight: 800, color: '#610361', lineHeight: 1.2 }}>
+               <Typography variant="h6" sx={{ fontWeight: 800, color: accentText, lineHeight: 1.2 }}>
                    Listado de Videos
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
@@ -289,10 +303,10 @@ export default function VideoList() {
               <IconButton 
                 onClick={handleRefresh} 
                 sx={{ 
-                  color: '#9b30a0', 
-                  backgroundColor: '#fdf4ff',
+                  color: theme.palette.primary.main, 
+                  backgroundColor: accentSoft,
                   borderRadius: '12px',
-                  '&:hover': { backgroundColor: '#fce4ff', color: '#9b30a0' }
+                  '&:hover': { backgroundColor: theme.palette.action.hover, color: theme.palette.primary.main }
                 }}
               >
                 <RefreshIcon />
@@ -303,11 +317,11 @@ export default function VideoList() {
               onClick={handleCreateClick} 
               startIcon={<AddIcon />}
               sx={{ 
-                backgroundColor: '#9b30a0', 
+                backgroundColor: theme.palette.primary.main, 
                 borderRadius: '12px', 
                 textTransform: 'none', 
                 fontWeight: 700, 
-                '&:hover': { backgroundColor: '#610361' } 
+                '&:hover': { backgroundColor: theme.palette.primary.dark } 
               }}
             >
               Nuevo Video
@@ -318,38 +332,42 @@ export default function VideoList() {
         <Box sx={{ 
           width: '100%', 
           height: { xs: 550, lg: 700 },
-          '& .MuiDataGrid-root': { border: 'none' },
+          '& .MuiDataGrid-root': { border: 'none', color: listTextColor },
+          '& .MuiDataGrid-cell, & .MuiDataGrid-cellContent, & .MuiDataGrid-row': {
+            color: listTextColor,
+          },
           '& .MuiDataGrid-columnHeaders': {
-            backgroundColor: '#610361 !important',
-            color: '#ffffff',
+            backgroundColor: `${theme.palette.primary.dark} !important`,
+            color: theme.palette.getContrastText(theme.palette.primary.dark),
             borderRadius: '12px',
             borderBottom: 'none',
             fontWeight: 800,
             textTransform: 'uppercase',
             fontSize: '0.75rem',
           },
-          '& .MuiDataGrid-columnHeader': { backgroundColor: '#610361 !important' },
-          '& .MuiDataGrid-columnHeaderTitle': { color: '#ffffff !important', fontWeight: 800 },
-          '& .MuiDataGrid-columnSeparator': { display: 'block', color: '#ffffff' },
+          '& .MuiDataGrid-columnHeader': { backgroundColor: `${theme.palette.primary.dark} !important` },
+          '& .MuiDataGrid-columnHeaderTitle': { color: `${theme.palette.getContrastText(theme.palette.primary.dark)} !important`, fontWeight: 800 },
+          '& .MuiDataGrid-columnSeparator': { display: 'block', color: theme.palette.getContrastText(theme.palette.primary.dark) },
           '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within, & .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within': { outline: 'none' },
           '& .MuiDataGrid-row.Mui-selected, & .MuiDataGrid-row.Mui-selected:hover, & .MuiDataGrid-cell.Mui-selected, & .MuiDataGrid-cell.Mui-selected:focus': { backgroundColor: 'transparent' },
-          '& .MuiDataGrid-columnHeader, & .MuiDataGrid-cell': { borderRight: '1px solid #ffffff' },
+          '& .MuiDataGrid-columnHeader, & .MuiDataGrid-cell': { borderRight: `1px solid ${theme.palette.divider}` },
           '& .MuiDataGrid-columnHeader:last-of-type, & .MuiDataGrid-cell:last-of-type': { borderRight: 'none' },
           '& .MuiDataGrid-cell': { borderBottom: 'none', display: 'flex', alignItems: 'center' },
-          '& .MuiDataGrid-footerContainer': { backgroundColor: '#fdf4ff', borderTop: 'none', borderRadius: '0 0 16px 16px', padding: '4px 12px' },
+          '& .MuiDataGrid-footerContainer': { backgroundColor: isDark ? '#121018' : theme.palette.background.paper, borderTop: 'none', borderRadius: '0 0 16px 16px', padding: '4px 12px', overflow: 'hidden' },
           '& .MuiDataGrid-virtualScroller': { overflowX: 'hidden' },
           '& .MuiDataGrid-scrollbar--horizontal': { display: 'none' },
-          '& .MuiTablePagination-root, & .MuiTablePagination-displayedRows, & .MuiTablePagination-selectLabel': { color: '#610361', fontWeight: 600 },
-          '& .MuiTablePagination-select': { backgroundColor: '#ffffff', borderRadius: '10px', padding: '4px 28px 4px 10px' },
+          '& .MuiTablePagination-root, & .MuiTablePagination-displayedRows, & .MuiTablePagination-selectLabel': { color: listTextColor, fontWeight: 600 },
+          '& .MuiTablePagination-select': { backgroundColor: theme.palette.background.paper, borderRadius: '10px', padding: '4px 28px 4px 10px', color: listTextColor },
+          '& .MuiTablePagination-selectIcon': { color: listTextColor },
           '& .MuiTablePagination-actions .MuiIconButton-root': {
-            color: '#610361',
-            backgroundColor: '#ffffff',
+            color: listTextColor,
+            backgroundColor: theme.palette.background.paper,
             borderRadius: '10px',
-            border: '1px solid #f0d6fb',
+            border: `1px solid ${theme.palette.divider}`,
             marginLeft: '4px',
-            '&:hover': { backgroundColor: '#fce4ff' },
+            '&:hover': { backgroundColor: theme.palette.action.hover },
           },
-          '& .MuiTablePagination-actions .MuiIconButton-root.Mui-disabled': { color: '#b58bb9', borderColor: '#f7e7fb' },
+          '& .MuiTablePagination-actions .MuiIconButton-root.Mui-disabled': { color: theme.palette.text.disabled, borderColor: theme.palette.divider },
         }}>
           {error ? (
             <Alert severity="error" sx={{ borderRadius: '12px' }}>

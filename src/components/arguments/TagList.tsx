@@ -15,7 +15,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import LabelIcon from '@mui/icons-material/Label';
-import { ThemeProvider, createTheme, useTheme } from '@mui/material/styles';
+import { ThemeProvider, createTheme, useTheme, alpha, useColorScheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import {
   DataGrid,
   GridActionsCellItem,
@@ -49,74 +50,18 @@ export default function TagList() {
   const dispatch = useDispatch<any>();
   const dialogs = useDialogs();
   const notifications = useNotifications();
-  const parentTheme = useTheme();
+  const theme = useTheme();
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const { mode } = useColorScheme();
+  
+  // VARIABLES DE ESTILO COPIADAS EXACTAMENTE DE ORDERLIST
+  const paletteMode = !mode || mode === 'system' ? (prefersDarkMode ? 'dark' : 'light') : mode;
+  const isDark = paletteMode === 'dark';
+  const accentText = isDark ? theme.palette.common.white : theme.palette.primary.dark;
+  const accentSoft = alpha(theme.palette.primary.main, isDark ? 0.2 : 0.08);
+  const listTextColor = isDark ? theme.palette.common.white : theme.palette.text.primary;
 
-  const localTheme = React.useMemo(
-    () =>
-      createTheme(parentTheme, {
-        components: {
-          MuiOutlinedInput: {
-            styleOverrides: {
-              root: {
-                borderRadius: '12px',
-                backgroundColor: '#fdf4ff',
-                outline: 'none',
-                '& .MuiOutlinedInput-notchedOutline': {
-                  border: 'none',
-                },
-                '&:hover .MuiOutlinedInput-notchedOutline': {
-                  border: 'none',
-                },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                  border: 'none',
-                },
-                '&.Mui-focused': { boxShadow: 'none' },
-                '&:focus': { outline: 'none' },
-              },
-            },
-          },
-          MuiSelect: {
-            styleOverrides: {
-              select: {
-                '&:focus': {
-                  backgroundColor: 'transparent',
-                  outline: 'none',
-                },
-              },
-            },
-            defaultProps: {
-              MenuProps: {
-                PaperProps: {
-                  sx: {
-                    borderRadius: '12px',
-                    border: '1px solid #f0d6fb',
-                    boxShadow: '0 10px 40px -10px rgba(155, 48, 160, 0.1)',
-                    mt: 1,
-                    '& .MuiMenuItem-root': {
-                      borderRadius: '8px',
-                      mx: 1,
-                      mb: 0.5,
-                      padding: '8px 12px',
-                      outline: 'none',
-                      '&:focus, &:focus-visible': { outline: 'none' },
-                      '&:hover': { backgroundColor: '#fdf4ff' },
-                      '&.Mui-selected': {
-                        backgroundColor: '#fce4ff',
-                        color: '#610361',
-                        fontWeight: 600,
-                        '&:hover': { backgroundColor: '#f0d6fb' },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      }),
-    [parentTheme]
-  );
-
+  // LÓGICA DE DATOS
   const tags = useSelector(listaTagsSelector);
   const isLoading = useSelector(obtenerTagsEnProgresoSelector);
   const error = useSelector(errorObtenerTagsSelector);
@@ -135,100 +80,68 @@ export default function TagList() {
     loadData();
   }, [loadData]);
 
-  const handleRefresh = React.useCallback(() => {
-    if (!isLoading) {
-      loadData();
-    }
-  }, [isLoading, loadData]);
-
-  const handleOpenCreate = React.useCallback(() => {
+  const handleOpenCreate = () => {
     setEditingTag(null);
     setFormData({ name: '', imageURL: '' });
     setOpenDialog(true);
-  }, []);
+  };
 
-  const handleOpenEdit = React.useCallback((tag: Tag) => () => {
+  const handleOpenEdit = (tag: Tag) => () => {
     setEditingTag(tag);
     setFormData({ name: tag.name, imageURL: tag.imageURL || '' });
     setOpenDialog(true);
-  }, []);
+  };
 
-  const handleCloseDialog = React.useCallback(() => {
+  const handleCloseDialog = () => {
     setOpenDialog(false);
     setEditingTag(null);
     setFormData({ name: '', imageURL: '' });
-  }, []);
+  };
 
-  const handleSubmit = React.useCallback(async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!formData.name.trim()) {
-      notifications.show('El nombre es requerido', { severity: 'error' });
-      return;
-    }
-
     try {
       if (editingTag) {
-        await dispatch(AccionesTag.actualizarTag({
-          ...editingTag,
-          name: formData.name,
-          imageURL: formData.imageURL || undefined,
-        }));
-        notifications.show('Categoría actualizada exitosamente', { severity: 'success' });
+        await dispatch(AccionesTag.actualizarTag({ ...editingTag, ...formData }));
+        notifications.show('Categoría actualizada', { severity: 'success' });
       } else {
-        await dispatch(AccionesTag.crearTag({
-          name: formData.name,
-          imageURL: formData.imageURL || undefined,
-        }));
-        notifications.show('Categoría creada exitosamente', { severity: 'success' });
+        await dispatch(AccionesTag.crearTag(formData));
+        notifications.show('Categoría creada', { severity: 'success' });
       }
       handleCloseDialog();
       loadData();
-    } catch (error) {
-      notifications.show(
-        extractErrorMessage(error),
-        { severity: 'error' }
-      );
+    } catch (err) {
+      notifications.show(extractErrorMessage(err), { severity: 'error' });
     }
-  }, [formData, editingTag, dispatch, notifications, handleCloseDialog, loadData]);
+  };
 
-  const handleDelete = React.useCallback((tag: Tag) => async () => {
-    const confirmed = await dialogs.confirm(
-      `¿Deseas eliminar la categoría "${tag.name}"?`,
-      {
-        title: '¿Eliminar categoría?',
-        severity: 'error',
-        okText: 'Eliminar',
-        cancelText: 'Cancelar',
-      }
-    );
-
+  const handleDelete = (tag: Tag) => async () => {
+    const confirmed = await dialogs.confirm(`¿Eliminar "${tag.name}"?`, { severity: 'error' });
     if (confirmed) {
-      try {
-        await dispatch(AccionesTag.borrarTag(tag.id));
-        notifications.show('Categoría eliminada exitosamente', { severity: 'success' });
-        loadData();
-      } catch (error) {
-        notifications.show(
-          extractErrorMessage(error),
-          { severity: 'error' }
-        );
-      }
+      await dispatch(AccionesTag.borrarTag(tag.id));
+      loadData();
     }
-  }, [dialogs, dispatch, notifications, loadData]);
+  };
 
+  // COLUMNAS CON EL ESTILO DE TEXTO DE ORDERLIST
   const columns = React.useMemo<GridColDef[]>(
     () => [
-      { field: 'id', headerName: 'ID', width: 80, align: 'center', headerAlign: 'center' },
+      { 
+        field: 'id', 
+        headerName: 'ID', 
+        width: 100, 
+        renderCell: (params) => (
+          <Typography variant="body2" sx={{ fontWeight: 800, color: listTextColor, fontFamily: 'monospace' }}>
+            #{params.value}
+          </Typography>
+        )
+      },
       { 
         field: 'name', 
         headerName: 'NOMBRE', 
         flex: 1,
-        minWidth: 160,
-        align: 'center',
-        headerAlign: 'center',
         renderCell: (params) => (
-          <Typography variant="body2" sx={{ fontWeight: 600, color: '#333', textAlign: 'center', width: '100%' }}>
+          <Typography variant="body2" sx={{ fontWeight: 600, color: listTextColor }}>
             {params.value}
           </Typography>
         )
@@ -237,71 +150,48 @@ export default function TagList() {
         field: 'imageURL',
         headerName: 'URL IMAGEN',
         flex: 2,
-        minWidth: 220,
-        align: 'center',
-        headerAlign: 'center',
         renderCell: (params) => (
-          params.value ? (
-            <Tooltip title={params.value}>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: '#666',
-                  textAlign: 'center',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  maxWidth: '100%',
-                  width: '100%'
-                }}
-              >
-                {params.value}
-              </Typography>
-            </Tooltip>
-          ) : (
-            <Typography variant="body2" sx={{ color: '#9e9e9e', fontStyle: 'italic', textAlign: 'center', width: '100%' }}>
-              Sin imagen
-            </Typography>
-          )
+          <Typography variant="body2" sx={{ color: listTextColor, opacity: 0.85, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {params.value || 'Sin imagen'}
+          </Typography>
         ),
       },
       {
         field: 'actions',
         type: 'actions',
         headerName: 'ACCIONES',
-        width: 120,
-        align: 'center',
-        headerAlign: 'center',
+        width: 110,
         getActions: ({ row }) => [
           <GridActionsCellItem
             key="edit"
-            icon={<EditIcon fontSize="small" sx={{ color: '#9b30a0' }} />}
+            icon={<Tooltip title="Editar"><EditIcon fontSize="small" sx={{ color: isDark ? theme.palette.primary.light : theme.palette.primary.main }} /></Tooltip>}
             label="Editar"
             onClick={handleOpenEdit(row)}
           />,
           <GridActionsCellItem
             key="delete"
-            icon={<DeleteIcon fontSize="small" sx={{ color: '#d32f2f' }} />}
+            icon={<Tooltip title="Eliminar"><DeleteIcon fontSize="small" sx={{ color: theme.palette.error.main }} /></Tooltip>}
             label="Eliminar"
             onClick={handleDelete(row)}
           />,
         ],
       },
     ],
-    [handleOpenEdit, handleDelete]
+    [listTextColor, isDark, theme.palette]
   );
 
   return (
-    <ThemeProvider theme={localTheme}>
-      <PageContainer title="Categorías" breadcrumbs={[{ title: 'Categorías' }]}>
+    <PageContainer title="Categorías" breadcrumbs={[{ title: 'Categorías' }]}>
       <Paper 
         elevation={0} 
         sx={{ 
           p: { xs: 2, md: 4 }, 
           borderRadius: '24px', 
-          border: '1px solid #f0d6fb',
-          boxShadow: '0 10px 40px -10px rgba(155, 48, 160, 0.05)',
-          backgroundColor: '#ffffff',
+          border: isDark ? '1px solid rgba(255, 255, 255, 0.12)' : `1px solid ${theme.palette.divider}`,
+          boxShadow: isDark
+            ? '0 18px 40px rgba(0, 0, 0, 0.35)'
+            : '0 10px 40px -10px rgba(155, 48, 160, 0.08)',
+          backgroundColor: isDark ? '#0f0d16' : theme.palette.background.paper,
           overflow: 'hidden',
           maxWidth: '100%' 
         }}
@@ -315,16 +205,14 @@ export default function TagList() {
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
              <Box sx={{ 
-                p: 1.5, 
-                borderRadius: 3, 
-                backgroundColor: '#fdf4ff', 
-                color: '#9b30a0',
+                p: 1.5, borderRadius: 3, 
+                backgroundColor: accentSoft, color: theme.palette.primary.main,
                 display: { xs: 'none', md: 'flex' }
              }}>
                 <LabelIcon />
              </Box>
              <Box>
-                <Typography variant="h6" sx={{ fontWeight: 800, color: '#610361', lineHeight: 1.2 }}>
+               <Typography variant="h6" sx={{ fontWeight: 800, color: accentText, lineHeight: 1.2 }}>
                    Listado de Categorías
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
@@ -334,14 +222,14 @@ export default function TagList() {
           </Box>
 
           <Stack direction="row" spacing={2} alignItems="center">
-            <Tooltip title="Recargar datos">
+            <Tooltip title="Refrescar Lista">
               <IconButton 
-                onClick={handleRefresh} 
+                onClick={loadData} 
                 sx={{ 
-                  color: '#9b30a0', 
-                  backgroundColor: '#fdf4ff',
+                  color: theme.palette.getContrastText(theme.palette.primary.main),
+                  backgroundColor: theme.palette.primary.main,
                   borderRadius: '12px',
-                  '&:hover': { backgroundColor: '#fce4ff', color: '#9b30a0' }
+                  '&:hover': { backgroundColor: theme.palette.primary.dark }
                 }}
               >
                 <RefreshIcon />
@@ -352,11 +240,9 @@ export default function TagList() {
               onClick={handleOpenCreate} 
               startIcon={<AddIcon />}
               sx={{ 
-                backgroundColor: '#9b30a0', 
-                borderRadius: '12px', 
-                textTransform: 'none', 
-                fontWeight: 700, 
-                '&:hover': { backgroundColor: '#610361' } 
+                backgroundColor: theme.palette.primary.main, 
+                borderRadius: '12px', textTransform: 'none', fontWeight: 700, 
+                '&:hover': { backgroundColor: theme.palette.primary.dark } 
               }}
             >
               Nueva Categoría
@@ -367,65 +253,46 @@ export default function TagList() {
         <Box sx={{ 
           width: '100%', 
           height: { xs: 550, lg: 700 },
-          '& .MuiDataGrid-root': { border: 'none' },
+          '& .MuiDataGrid-root': { border: 'none', color: listTextColor },
+          '& .MuiDataGrid-cell, & .MuiDataGrid-cellContent, & .MuiDataGrid-row': { color: listTextColor },
           '& .MuiDataGrid-columnHeaders': {
-            backgroundColor: '#610361 !important',
-            color: '#ffffff',
-            borderRadius: '12px',
-            borderBottom: 'none',
-            fontWeight: 800,
-            textTransform: 'uppercase',
-            fontSize: '0.75rem',
+            backgroundColor: `${theme.palette.primary.dark} !important`,
+            color: theme.palette.getContrastText(theme.palette.primary.dark),
+            borderRadius: '12px', borderBottom: 'none', fontWeight: 800, textTransform: 'uppercase', fontSize: '0.75rem',
           },
-          '& .MuiDataGrid-columnHeader': { backgroundColor: '#610361 !important' },
-          '& .MuiDataGrid-columnHeaderTitle': { color: '#ffffff !important', fontWeight: 800 },
-          '& .MuiDataGrid-columnSeparator': { display: 'block', color: '#ffffff' },
+          '& .MuiDataGrid-columnHeader': { backgroundColor: `${theme.palette.primary.dark} !important` },
+          '& .MuiDataGrid-columnHeaderTitle': { color: `${theme.palette.getContrastText(theme.palette.primary.dark)} !important`, fontWeight: 800 },
+          '& .MuiDataGrid-columnSeparator': { display: 'block', color: theme.palette.getContrastText(theme.palette.primary.dark) },
           '& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within, & .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within': { outline: 'none' },
           '& .MuiDataGrid-row.Mui-selected, & .MuiDataGrid-row.Mui-selected:hover, & .MuiDataGrid-cell.Mui-selected, & .MuiDataGrid-cell.Mui-selected:focus': { backgroundColor: 'transparent' },
-          '& .MuiDataGrid-columnHeader, & .MuiDataGrid-cell': { borderRight: '1px solid #ffffff' },
+          '& .MuiDataGrid-columnHeader, & .MuiDataGrid-cell': { borderRight: `1px solid ${theme.palette.divider}` },
           '& .MuiDataGrid-columnHeader:last-of-type, & .MuiDataGrid-cell:last-of-type': { borderRight: 'none' },
           '& .MuiDataGrid-cell': { borderBottom: 'none', display: 'flex', alignItems: 'center' },
-          '& .MuiDataGrid-footerContainer': { backgroundColor: '#fdf4ff', borderTop: 'none', borderRadius: '0 0 16px 16px', padding: '4px 12px' },
+          '& .MuiDataGrid-footerContainer': {
+            backgroundColor: isDark ? '#121018' : theme.palette.background.paper,
+            borderTop: 'none', borderRadius: '0 0 16px 16px', padding: '4px 12px', overflow: 'hidden',
+          },
           '& .MuiDataGrid-virtualScroller': { overflowX: 'hidden' },
           '& .MuiDataGrid-scrollbar--horizontal': { display: 'none' },
-          '& .MuiTablePagination-root, & .MuiTablePagination-displayedRows, & .MuiTablePagination-selectLabel': { color: '#610361', fontWeight: 600 },
-          '& .MuiTablePagination-select': { backgroundColor: '#ffffff', borderRadius: '10px', padding: '4px 28px 4px 10px' },
+          '& .MuiTablePagination-root, & .MuiTablePagination-displayedRows, & .MuiTablePagination-selectLabel': { color: listTextColor, fontWeight: 600 },
+          '& .MuiTablePagination-select': { backgroundColor: theme.palette.background.paper, borderRadius: '10px', padding: '4px 28px 4px 10px', color: listTextColor },
+          '& .MuiTablePagination-selectIcon': { color: listTextColor },
           '& .MuiTablePagination-actions .MuiIconButton-root': {
-            color: '#610361',
-            backgroundColor: '#ffffff',
-            borderRadius: '10px',
-            border: '1px solid #f0d6fb',
-            marginLeft: '4px',
-            '&:hover': { backgroundColor: '#fce4ff' },
+            color: listTextColor, backgroundColor: theme.palette.background.paper, borderRadius: '10px', border: `1px solid ${theme.palette.divider}`, marginLeft: '4px',
+            '&:hover': { backgroundColor: theme.palette.action.hover },
           },
-          '& .MuiTablePagination-actions .MuiIconButton-root.Mui-disabled': { color: '#b58bb9', borderColor: '#f7e7fb' },
         }}>
           {error ? (
-            <Alert severity="error" sx={{ borderRadius: '12px' }}>
-              {(error as any).message || 'Error al conectar con el servidor'}
-            </Alert>
+            <Alert severity="error" sx={{ borderRadius: '12px' }}>{error.message || 'Error'}</Alert>
           ) : (
             <DataGrid
               rows={tags || []}
               columns={columns}
               loading={isLoading}
               pageSizeOptions={[10, 25, 50]}
-              initialState={{
-                pagination: { paginationModel: { pageSize: 10 } },
-              }}
-              localeText={{
-                paginationRowsPerPage: 'Filas por pagina',
-                paginationDisplayedRows: (params: PaginationDisplayedRowsParams) => {
-                  const { from, to, count } = params;
-                  return `${from}-${to} de ${count !== -1 ? count : `mas de ${to}`}`;
-                },
-              }}
+              initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
               rowSelection={false}
               disableColumnMenu
-              disableColumnSorting
-              disableColumnFilter
-              disableColumnSelector
-              disableRowSelectionOnClick
               rowHeight={70}
             />
           )}
@@ -434,56 +301,23 @@ export default function TagList() {
 
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: '20px' } }}>
         <form onSubmit={handleSubmit}>
-          <DialogTitle sx={{ fontWeight: 800, color: '#610361', textAlign: 'center', mt: 1 }}>
+          <DialogTitle sx={{ fontWeight: 800, color: isDark ? '#fff' : theme.palette.primary.dark, textAlign: 'center', mt: 1 }}>
             {editingTag ? 'Editar Categoría' : 'Nueva Categoría'}
           </DialogTitle>
           <DialogContent>
             <Stack spacing={3} sx={{ mt: 2 }}>
-              <TextField
-                label="Nombre"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
-                fullWidth
-                autoFocus
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
-              />
-              <TextField
-                label="URL de Imagen (opcional)"
-                value={formData.imageURL}
-                onChange={(e) => setFormData({ ...formData, imageURL: e.target.value })}
-                fullWidth
-                placeholder="https://ejemplo.com/imagen.jpg"
-                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
-              />
+              <TextField label="Nombre" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required fullWidth autoFocus />
+              <TextField label="URL de Imagen (opcional)" value={formData.imageURL} onChange={(e) => setFormData({ ...formData, imageURL: e.target.value })} fullWidth />
             </Stack>
           </DialogContent>
           <DialogActions sx={{ p: 3, pt: 1, justifyContent: 'center', gap: 2 }}>
-            <Button 
-              onClick={handleCloseDialog} 
-              sx={{ color: '#666', fontWeight: 600, borderRadius: '12px' }}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={isCreating || isUpdating}
-              startIcon={(isCreating || isUpdating) ? <CircularProgress size={20} color="inherit" /> : null}
-              sx={{ 
-                backgroundColor: '#9b30a0', 
-                borderRadius: '12px', 
-                fontWeight: 700, 
-                px: 4,
-                '&:hover': { backgroundColor: '#610361' } 
-              }}
-            >
-              {editingTag ? 'Actualizar' : 'Crear'}
+            <Button onClick={handleCloseDialog} sx={{ color: theme.palette.text.secondary, fontWeight: 600, borderRadius: '12px' }}>Cancelar</Button>
+            <Button type="submit" variant="contained" disabled={isCreating || isUpdating} sx={{ borderRadius: '12px', fontWeight: 700, px: 4 }}>
+              {(isCreating || isUpdating) ? <CircularProgress size={20} color="inherit" /> : (editingTag ? 'Actualizar' : 'Crear')}
             </Button>
           </DialogActions>
         </form>
       </Dialog>
-      </PageContainer>
-    </ThemeProvider>
+    </PageContainer>
   );
 }

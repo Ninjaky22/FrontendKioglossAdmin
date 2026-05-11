@@ -205,7 +205,7 @@ export default function ProductShow() {
                 <Grid container spacing={1} sx={{ mt: 1 }}>
                   {Object.entries(product.attributes).map(([key, value]) => (
                     <Grid size={{ xs: 12, sm: 6 }} key={key}>
-                      <Box sx={{ display: 'flex', borderBottom: '1px solid #eee', py: 0.5 }}>
+                      <Box sx={{ display: 'flex', borderBottom: '1px solid', borderColor: 'divider', py: 0.5 }}>
                         <Typography variant="subtitle2" sx={{ width: '40%', fontWeight: 'bold' }}>{key}</Typography>
                         <Typography variant="body2" sx={{ width: '60%' }}>{String(value)}</Typography>
                       </Box>
@@ -251,7 +251,7 @@ export default function ProductShow() {
                   </Typography>
                 ) : (
                   product.variants.map((v: any) => (
-                    <Box key={v.id} sx={{ p: 1, border: '1px solid #eee', borderRadius: 1 }}>
+                    <Box key={v.id} sx={{ p: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
                       <Typography variant="body2" sx={{ fontWeight: 'bold' }}>SKU: {v.sku} - Stock: {v.stock}</Typography>
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
                         {v.options?.map((opt: any) => (
@@ -260,7 +260,7 @@ export default function ProductShow() {
                             label={opt.value} 
                             size="small" 
                             variant="outlined" 
-                            icon={opt.metaValue ? <Box sx={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: opt.metaValue, ml: 1, border: '1px solid #ddd' }} /> : undefined}
+                            icon={opt.metaValue ? <Box sx={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: opt.metaValue, ml: 1, border: '1px solid', borderColor: 'divider' }} /> : undefined}
                           />
                         ))}
                       </Box>
