@@ -42,6 +42,7 @@ function Notification({
   const { close } = notificationsContext;
 
   const { severity, actionText, onAction, autoHideDuration } = options;
+  const resolvedAutoHideDuration = autoHideDuration === undefined ? 4000 : autoHideDuration;
 
   const handleClose = React.useCallback(
     (_: unknown, reason?: CloseReason | SnackbarCloseReason) => {
@@ -79,7 +80,7 @@ function Notification({
     externalSlotProps: {},
     additionalProps: {
       open,
-      autoHideDuration,
+      autoHideDuration: resolvedAutoHideDuration,
       onClose: handleClose,
       action,
     },

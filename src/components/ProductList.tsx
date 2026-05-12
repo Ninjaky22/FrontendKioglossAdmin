@@ -149,8 +149,8 @@ export default function ProductList() {
       align: 'center',
       headerAlign: 'center',
       renderCell: (params) => {
-        const stockValue = params.value as number | null | undefined;
-        const isMissing = stockValue === null || stockValue === undefined;
+        const stockValue = Number(params.value) as number | null | undefined;
+        const isMissing = stockValue === null || stockValue === undefined || stockValue <= 0;
         const isLow = !isMissing && stockValue <= 10;
         const label = isMissing ? 'Sin stock' : String(stockValue);
         const bg = isMissing
@@ -178,13 +178,32 @@ export default function ProductList() {
       },
     },
     {
-      field: 'tag',
+      field: 'tags',
       headerName: 'CATEGORÍA',
       flex: 1,
       minWidth: 140,
       align: 'center',
       headerAlign: 'center',
-      valueGetter: (_, row) => row.tag?.name || 'Sin Categoría',
+      valueGetter: (_value, row) => {
+        const rawTags = row?.tags ?? row?.tag ?? row?.categories ?? row?.category;
+
+        if (Array.isArray(rawTags)) {
+          const names = rawTags
+            .map((tag) => (typeof tag === 'string' ? tag : tag?.name ?? tag?.title ?? tag?.label))
+            .filter(Boolean);
+          return names.length > 0 ? names.join(', ') : 'Sin Categoría';
+        }
+
+        if (rawTags && typeof rawTags === 'object') {
+          return rawTags?.name ?? rawTags?.title ?? rawTags?.label ?? 'Sin Categoría';
+        }
+
+        if (typeof rawTags === 'string') {
+          return rawTags;
+        }
+
+        return 'Sin Categoría';
+      },
       renderCell: (params) => (
         <Chip label={params.value} size="small" variant="outlined" sx={{ borderRadius: '8px', borderColor: alpha(theme.palette.primary.main, 0.3), color: isDark ? theme.palette.common.white : accentText, fontWeight: 600 }} />
       )
@@ -195,20 +214,28 @@ export default function ProductList() {
       width: 130,
       align: 'center',
       headerAlign: 'center',
-      renderCell: (params) => (
-        <Chip 
-          label={params.value ? 'Disponible' : 'Agotado'} 
-          size="small" 
-          sx={{
-            backgroundColor: params.value
-              ? alpha(theme.palette.success.main, isDark ? 0.22 : 0.12)
-              : alpha(theme.palette.text.primary, isDark ? 0.14 : 0.06),
-            color: isDark ? theme.palette.common.white : params.value ? theme.palette.success.main : theme.palette.text.secondary,
-            fontWeight: 700,
-            borderRadius: '12px',
-          }}
-        />
-      ),
+      renderCell: (params) => {
+        const status = params.value as string | undefined;
+        const label = status === 'published' ? 'Publicado' : status === 'draft' ? 'Borrador' : (status ? String(status) : 'Desconocido');
+        const isPublished = status === 'published';
+        const bg = isPublished
+          ? alpha(theme.palette.success.main, isDark ? 0.22 : 0.12)
+          : alpha(theme.palette.text.primary, isDark ? 0.14 : 0.06);
+        const color = isDark ? theme.palette.common.white : isPublished ? theme.palette.success.main : theme.palette.text.secondary;
+
+        return (
+          <Chip
+            label={label}
+            size="small"
+            sx={{
+              backgroundColor: bg,
+              color,
+              fontWeight: 700,
+              borderRadius: '12px',
+            }}
+          />
+        );
+      },
     },
     {
       field: 'actions',
