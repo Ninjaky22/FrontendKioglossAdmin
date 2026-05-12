@@ -12,6 +12,7 @@ import Stack from '@mui/material/Stack';
 import { Link, useNavigate } from 'react-router';
 import ThemeSwitcher from './ThemeSwitcher';
 import Button from '@mui/material/Button';
+import NotificationBell from './NotificationBell';
 import { getToken } from '../utils/tokenManagement';
 import { CerrarSesion } from '../store/actions/session';
 import { useDispatch } from 'react-redux';
@@ -156,6 +157,7 @@ export default function DashboardHeader({
             >
               <ThemeSwitcher />
             </Stack>
+            {getToken() && <NotificationBell />}
             {getToken() && (
               <Button
                 onClick={() => {
