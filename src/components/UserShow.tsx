@@ -107,16 +107,11 @@ export default function UserShow() {
   };
 
   const ordersSource = React.useMemo(() => {
-    if (ordersByUser !== null) return ordersByUser;
+    // Usar resultados de la API externa solo si encontró coincidencias reales
+    if (Array.isArray(ordersByUser) && ordersByUser.length > 0) return ordersByUser;
+    // Fallback: los recentOrders que devuelve el backend directamente en UserDetailDTO
     const anyUser = user as any;
-    return (
-      anyUser?.recentOrders ??
-      anyUser?.orders ??
-      anyUser?.orderHistory ??
-      anyUser?.historialPedidos ??
-      anyUser?.historial ??
-      []
-    );
+    return anyUser?.recentOrders ?? [];
   }, [ordersByUser, user]);
 
   const favoritesSource = React.useMemo(() => {
@@ -133,7 +128,8 @@ export default function UserShow() {
   }, [user]);
 
   const totalOrders = React.useMemo(() => {
-    if (typeof user?.totalOrders === 'number' && user.totalOrders > 0) return user.totalOrders;
+    // user.totalOrders viene del backend (campo raíz de UserDetailDTO)
+    if (typeof user?.totalOrders === 'number') return user.totalOrders;
     return Array.isArray(ordersSource) ? ordersSource.length : 0;
   }, [user?.totalOrders, ordersSource]);
 

@@ -378,45 +378,38 @@ export const inputsCustomizations: Components<Theme> = {
   MuiOutlinedInput: {
     styleOverrides: {
       input: {
-        padding: 0,
+        padding: '8px 4px',
       },
       root: ({ theme }) => ({
-        padding: '8px 12px',
+        padding: '0 14px',
+        minHeight: '3rem',
+        boxSizing: 'border-box',
         color: (theme.vars || theme).palette.text.primary,
-        borderRadius: (theme.vars || theme).shape.borderRadius,
-        border: `1px solid ${(theme.vars || theme).palette.divider}`,
-        backgroundColor: (theme.vars || theme).palette.background.default,
+        borderRadius: 16,
+        border: `1px solid rgba(97, 3, 97, 0.15)`,
+        backgroundColor: 'rgba(97, 3, 97, 0.05)',
         transition: 'border 120ms ease-in',
         '&:hover': {
-          borderColor: gray[400],
+          backgroundColor: 'rgba(97, 3, 97, 0.08)',
+          borderColor: 'rgba(97, 3, 97, 0.3)',
         },
         [`&.${outlinedInputClasses.focused}`]: {
-          outline: `3px solid ${alpha(brand[500], 0.5)}`,
-          borderColor: brand[400],
+          backgroundColor: 'rgba(97, 3, 97, 0.08)',
+          boxShadow: `0 0 0 3px ${alpha(brand[400], 0.2)}`,
+          borderColor: brand[500],
         },
         ...theme.applyStyles('dark', {
+          backgroundColor: alpha(brand[900], 0.25),
+          borderColor: alpha(brand[500], 0.35),
           '&:hover': {
-            borderColor: gray[500],
+            backgroundColor: alpha(brand[900], 0.35),
+            borderColor: alpha(brand[500], 0.5),
+          },
+          [`&.${outlinedInputClasses.focused}`]: {
+            boxShadow: `0 0 0 3px ${alpha(brand[500], 0.25)}`,
+            borderColor: brand[400],
           },
         }),
-        variants: [
-          {
-            props: {
-              size: 'small',
-            },
-            style: {
-              height: '2.25rem',
-            },
-          },
-          {
-            props: {
-              size: 'medium',
-            },
-            style: {
-              height: '2.5rem',
-            },
-          },
-        ],
       }),
       notchedOutline: {
         border: 'none',
@@ -438,39 +431,6 @@ export const inputsCustomizations: Components<Theme> = {
       root: ({ theme }) => ({
         typography: theme.typography.caption,
         marginBottom: 8,
-      }),
-    },
-  },
-  MuiOutlinedInput: {
-    styleOverrides: {
-      root: ({ theme }) => ({
-        borderRadius: 16,
-        backgroundColor: 'rgba(97, 3, 97, 0.05)',
-        [`& .${outlinedInputClasses.notchedOutline}`]: {
-          borderColor: 'rgba(97, 3, 97, 0.15)',
-        },
-        '&:hover': {
-          backgroundColor: 'rgba(97, 3, 97, 0.08)',
-        },
-        [`&.${outlinedInputClasses.focused}`]: {
-          backgroundColor: 'rgba(97, 3, 97, 0.08)',
-          boxShadow: `0 0 0 3px ${alpha(brand[400], 0.2)}`,
-        },
-        [`&.${outlinedInputClasses.focused} .${outlinedInputClasses.notchedOutline}`]: {
-          borderColor: brand[500],
-        },
-        ...theme.applyStyles('dark', {
-          backgroundColor: alpha(brand[900], 0.25),
-          [`& .${outlinedInputClasses.notchedOutline}`]: {
-            borderColor: alpha(brand[500], 0.35),
-          },
-          '&:hover': {
-            backgroundColor: alpha(brand[900], 0.35),
-          },
-          [`&.${outlinedInputClasses.focused}`]: {
-            boxShadow: `0 0 0 3px ${alpha(brand[500], 0.25)}`,
-          },
-        }),
       }),
     },
   },

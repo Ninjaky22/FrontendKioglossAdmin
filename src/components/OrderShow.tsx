@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Box, Button, CircularProgress, Divider, Grid, Paper, Stack, Typography, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import { Box, Button, CircularProgress, Divider, Grid, Paper, Stack, Typography, FormControl, MenuItem, Select } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import TimerIcon from '@mui/icons-material/Timer';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -38,6 +38,7 @@ export default function OrderShow() {
     try {
       await dispatch(AccionesOrder.actualizarEstadoOrder(Number(orderId), status));
       notifications.show('Estado de la orden actualizado exitosamente.', { severity: 'success' });
+      navigate('/orders');
     } catch (err) {
       notifications.show(extractErrorMessage(err), { severity: 'error' });
     }
@@ -86,8 +87,13 @@ export default function OrderShow() {
             <Typography variant="h6" gutterBottom>Estado</Typography>
             <Divider sx={{ mb: 2 }} />
             <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel>Estado</InputLabel>
-              <Select value={status} label="Estado" onChange={(e) => setStatus(e.target.value)}>
+              <Typography
+                variant="caption"
+                sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', mb: 0.5, display: 'block', color: 'primary.main' }}
+              >
+                Estado
+              </Typography>
+              <Select value={status} onChange={(e) => setStatus(e.target.value)} displayEmpty>
                 <MenuItem value="PENDING" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <TimerIcon fontSize="small" sx={{ color: 'warning.main' }} /> PENDIENTES
                 </MenuItem>

@@ -64,6 +64,8 @@ export const navigationCustomizations: Components<Theme> = {
     },
     styleOverrides: {
       root: ({ theme }) => ({
+        minHeight: '3rem',
+        boxSizing: 'border-box',
         borderRadius: (theme.vars || theme).shape.borderRadius,
         border: '1px solid',
         borderColor: gray[200],
@@ -104,9 +106,11 @@ export const navigationCustomizations: Components<Theme> = {
       select: ({ theme }) => ({
         display: 'flex',
         alignItems: 'center',
+        padding: '8px 14px',
         ...theme.applyStyles('dark', {
           display: 'flex',
           alignItems: 'center',
+          padding: '8px 14px',
           '&:focus-visible': {
             backgroundColor: gray[900],
           },

@@ -15,7 +15,7 @@ import KpiCard from '../components/reports/KpiCard';
 import SalesLineChart from '../components/reports/SalesLineChart';
 import TopProductsChart from '../components/reports/TopProductsChart';
 import OrdersDonutChart from '../components/reports/OrdersDonutChart';
-import ExportCSVButton from '../components/reports/ExportCSVButton';
+import ExportExcelButton from '../components/reports/ExportExcelButton';
 import useReports from '../hooks/useReports';
 
 const currencyFormatter = new Intl.NumberFormat('es-CO', {
@@ -117,7 +117,13 @@ export default function ReportsPage() {
           <Typography variant="h4" sx={{ fontWeight: 700 }}>
             📊 Reportes y Estadísticas
           </Typography>
-          <ExportCSVButton data={salesByDay} filename="ventas-por-dia.csv" />
+          <ExportExcelButton
+            summary={summary}
+            salesByDay={salesByDay}
+            topProducts={topProducts}
+            orderStatusDistribution={orderStatusDistribution}
+            days={days}
+          />
         </Box>
 
         {error ? (

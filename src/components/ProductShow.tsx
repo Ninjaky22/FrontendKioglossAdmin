@@ -182,10 +182,10 @@ export default function ProductShow() {
           <Grid size={12}>
             <Paper sx={{ px: 2, py: 1 }}>
               <Typography variant="overline">Descripción</Typography>
-              <Box 
+              <Box
                 className="quill-content"
                 dangerouslySetInnerHTML={{ __html: product.description || '' }}
-                sx={{
+                sx={(theme) => ({
                   mb: 1,
                   maxWidth: '100%',
                   overflowX: 'hidden',
@@ -193,7 +193,15 @@ export default function ProductShow() {
                   wordBreak: 'break-word',
                   '& img': { maxWidth: '100%', height: 'auto' },
                   '& table': { maxWidth: '100%', display: 'block', overflowX: 'auto' },
-                }}
+                  ...theme.applyStyles('dark', {
+                    '& [style*="background"]': {
+                      backgroundColor: 'transparent !important',
+                    },
+                    '& [style*="color"]': {
+                      color: 'inherit !important',
+                    },
+                  }),
+                })}
               />
             </Paper>
           </Grid>

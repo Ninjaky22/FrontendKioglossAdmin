@@ -223,7 +223,7 @@ const VariantBuilder = React.memo(({ initialVariants, variantTypes, productImage
                       <Autocomplete
                         key={type.id}
                         size="small"
-                        sx={{ minWidth: 140 }}
+                        sx={{ minWidth: 160 }} // Aumentado para evitar que se vea apeñuzcado
                         options={type.options}
                         getOptionLabel={(o: VariantOptionDTO) => o.value}
                         value={selectedOpt}
@@ -234,11 +234,11 @@ const VariantBuilder = React.memo(({ initialVariants, variantTypes, productImage
                     );
                   })}
 
-                  <TextField label="Stock" type="number" size="small" value={v.stock} onChange={(e) => handleChange(idx, 'stock', Number(e.target.value))} sx={{ width: 90 }} />
-                  <TextField label="SKU" size="small" value={v.sku} onChange={(e) => handleChange(idx, 'sku', e.target.value)} sx={{ flex: 1, minWidth: 120 }} />
+                  <TextField label="Stock" type="number" size="small" value={v.stock} onChange={(e) => handleChange(idx, 'stock', Number(e.target.value))} sx={{ width: 100 }} />
+                  <TextField label="SKU" size="small" value={v.sku} onChange={(e) => handleChange(idx, 'sku', e.target.value)} sx={{ flex: 1, minWidth: 140 }} />
                   <Autocomplete
                     size="small"
-                    sx={{ flex: 2, minWidth: 180 }}
+                    sx={{ flex: 2, minWidth: 200 }} // Aumentado para mayor espacio
                     options={productImages}
                     getOptionLabel={(img: ImageDTO) => img.url.split('/').pop() || img.url}
                     value={selectedImage}
@@ -276,10 +276,18 @@ const RichTextEditor = React.memo(({ value, onChange, error }: { value: string, 
     <Typography variant="body1" sx={{ mb: 1, color: error ? 'error.main' : 'text.secondary' }}>
       Descripción
     </Typography>
-    <Paper variant="outlined">
-      <ReactQuill 
-        theme="snow" 
-        value={value} 
+    <Paper
+      variant="outlined"
+      sx={(theme) => ({
+        ...theme.applyStyles('dark', {
+          '& .ql-editor [style*="background"]': { backgroundColor: 'transparent !important' },
+          '& .ql-editor [style*="color"]': { color: 'inherit !important' },
+        }),
+      })}
+    >
+      <ReactQuill
+        theme="snow"
+        value={value}
         onChange={onChange}
         style={{ height: '250px', marginBottom: '45px' }}
       />
@@ -371,9 +379,20 @@ const OptimizedTextField = React.memo(({ label, name, value, onChange, error, he
 });
 
 export default function ProductForm(props: ProductFormProps) {
-  const { formState, onFieldChange, onSubmit, submitButtonLabel, backButtonPath, variantTypes, tags, productImages } = props;
-  const formValues = formState.values;
-  const formErrors = formState.errors;
+  // BLINDAJE CONTRA UNDEFINED PARA EVITAR ERROR image_560f80.png
+  const { 
+    formState = { values: {}, errors: {} }, 
+    onFieldChange, 
+    onSubmit, 
+    submitButtonLabel, 
+    backButtonPath, 
+    variantTypes = [], 
+    tags = [], 
+    productImages = [] 
+  } = props;
+
+  const formValues = formState?.values || {};
+  const formErrors = formState?.errors || {};
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -425,6 +444,8 @@ export default function ProductForm(props: ProductFormProps) {
       <FormGroup>
         <Grid container spacing={3} sx={{ mb: 2, width: '100%' }}>
           <Grid size={12}><Typography variant="h6" gutterBottom>Información Básica</Typography></Grid>
+          
+          {/* ARREGLO DE ANCHOS PARA TITULO Y ESTADO */}
           <Grid size={{ xs: 12, md: 8 }}>
             <OptimizedTextField 
                 label="Título" 
@@ -477,7 +498,6 @@ export default function ProductForm(props: ProductFormProps) {
                 slotProps={{htmlInput: { min: 0, step: 0.01 }}}
             />
           </Grid>
-          {/* Stock removed, managed by variants */}
           <Grid size={12} sx={{ mt: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
               <Typography variant="h6">Stock e Inventario</Typography>
