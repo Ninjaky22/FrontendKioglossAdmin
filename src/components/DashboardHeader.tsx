@@ -124,7 +124,7 @@ export default function DashboardHeader({
         >
           <Stack direction="row" alignItems="center">
             <Box sx={{ mr: 5 }}>{getMenuIcon(menuOpen)}</Box>
-            <Link to="/" style={{ textDecoration: 'none' }}>
+            <Link to="/orders" style={{ textDecoration: 'none' }}>
               <Stack direction="row" alignItems="center">
                 {logo ? <LogoContainer>{logo}</LogoContainer> : null}
                 {title ? (

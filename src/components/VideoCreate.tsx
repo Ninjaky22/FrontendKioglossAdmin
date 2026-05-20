@@ -17,10 +17,18 @@ const INITIAL_FORM_VALUES: Partial<CreateVideoRequest> = {
   productId: undefined,
 };
 
+const isInstagramUrl = (url: string) =>
+  /instagram\.com\/(reel|p|tv)\/[a-zA-Z0-9_-]+/.test(url.trim());
+
 const validateVideo = (values: Partial<CreateVideoRequest>) => {
   const errors: Partial<Record<keyof CreateVideoRequest, string>> = {};
   if (!values.thumbnailUrl || values.thumbnailUrl.trim() === '') {
     errors.thumbnailUrl = 'La URL de la miniatura es requerida';
+  }
+  if (!values.videoUrl || values.videoUrl.trim() === '') {
+    errors.videoUrl = 'La URL del video es requerida';
+  } else if (!isInstagramUrl(values.videoUrl)) {
+    errors.videoUrl = 'Solo se aceptan enlaces de Instagram (reel, post o IGTV)';
   }
   if (!values.username || values.username.trim() === '') {
     errors.username = 'El nombre de usuario es requerido';

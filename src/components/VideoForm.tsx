@@ -29,7 +29,10 @@ interface VideoFormProps {
   products: Product[];
 }
 
-const SUPPORTED_PLATFORMS = ['YouTube', 'TikTok', 'Instagram', 'Facebook', '.mp4'];
+const SUPPORTED_PLATFORMS = ['Instagram'];
+
+const isInstagramUrl = (url: string) =>
+  /instagram\.com\/(reel|p|tv)\/[a-zA-Z0-9_-]+/.test(url.trim());
 
 export default function VideoForm({
   formState,
@@ -41,7 +44,6 @@ export default function VideoForm({
 }: VideoFormProps) {
   const { values, errors } = formState;
   const [isUploading, setIsUploading] = useState(false);
-  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
 
   const handleFileUpload = async (
     file: File,
@@ -109,41 +111,30 @@ export default function VideoForm({
 
         <Box>
           <TextField
-            label="URL del Video"
+            label="URL del Video de Instagram"
             value={values.videoUrl || ''}
             onChange={(e) => onFieldChange('videoUrl', e.target.value)}
-            error={!!errors.videoUrl}
-            helperText={errors.videoUrl}
-            placeholder="https://www.youtube.com/watch?v=... o enlace de TikTok, Instagram, Facebook"
+            error={!!errors.videoUrl || !!(values.videoUrl && !isInstagramUrl(values.videoUrl))}
+            helperText={
+              errors.videoUrl
+              || (values.videoUrl && !isInstagramUrl(values.videoUrl)
+                  ? 'Solo se aceptan enlaces de Instagram (reel, post o IGTV)'
+                  : 'Pega el enlace del reel o publicación de Instagram')
+            }
+            placeholder="https://www.instagram.com/reel/ABC123..."
             fullWidth
           />
-          <Button
-            component="label"
-            variant="outlined"
-            startIcon={isUploadingVideo ? <CircularProgress size={18} /> : <CloudUploadIcon />}
-            disabled={isUploadingVideo}
-            sx={{ mt: 1 }}
-          >
-            {isUploadingVideo ? 'Subiendo video...' : 'Subir video desde PC'}
-            <input
-              type="file"
-              accept="video/*"
-              hidden
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) handleFileUpload(file, 'videoUrl', setIsUploadingVideo);
-                e.target.value = '';
-              }}
-            />
-          </Button>
-          <Stack direction="row" spacing={0.5} sx={{ mt: 1 }}>
+          <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 1 }}>
+            <Typography variant="caption" color="text.secondary">
+              Plataforma aceptada:
+            </Typography>
             {SUPPORTED_PLATFORMS.map((p) => (
-              <Chip key={p} label={p} size="small" variant="outlined" />
+              <Chip key={p} label={p} size="small" color="primary" variant="outlined" />
             ))}
           </Stack>
-          {values.videoUrl && values.videoUrl.includes('/uploads/') && (
-            <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-              ✓ Video subido al servidor
+          {values.videoUrl && isInstagramUrl(values.videoUrl) && (
+            <Typography variant="caption" color="success.main" sx={{ mt: 0.5, display: 'block' }}>
+              ✓ Enlace de Instagram válido
             </Typography>
           )}
         </Box>

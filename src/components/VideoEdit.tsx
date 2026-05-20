@@ -16,10 +16,18 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import { ThemeProvider, createTheme, useTheme, alpha } from '@mui/material/styles';
 
+const isInstagramUrl = (url: string) =>
+  /instagram\.com\/(reel|p|tv)\/[a-zA-Z0-9_-]+/.test(url.trim());
+
 const validateVideo = (values: Partial<UpdateVideoRequest & { productId: number }>) => {
   const errors: Partial<Record<string, string>> = {};
   if (!values.thumbnailUrl || values.thumbnailUrl.trim() === '') {
     errors.thumbnailUrl = 'La URL de la miniatura es requerida';
+  }
+  if (!values.videoUrl || (values.videoUrl as string).trim() === '') {
+    errors.videoUrl = 'La URL del video es requerida';
+  } else if (!isInstagramUrl(values.videoUrl as string)) {
+    errors.videoUrl = 'Solo se aceptan enlaces de Instagram (reel, post o IGTV)';
   }
   if (!values.username || (values.username as string).trim() === '') {
     errors.username = 'El nombre de usuario es requerido';

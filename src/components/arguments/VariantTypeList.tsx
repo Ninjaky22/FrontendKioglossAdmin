@@ -253,7 +253,6 @@ export default function VariantTypeList() {
               <Select value={type} label="Tipo de Presentación" onChange={e => setType(e.target.value)}>
                 <MenuItem value="button">Botón (texto)</MenuItem>
                 <MenuItem value="color">Color (círculo con color)</MenuItem>
-                <MenuItem value="select">Lista desplegable</MenuItem>
               </Select>
             </FormControl>
             
