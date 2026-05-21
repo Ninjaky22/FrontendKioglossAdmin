@@ -153,7 +153,7 @@ export default function VideoEdit() {
         const { errors } = validateVideo(newValues);
         return {
           values: newValues,
-          errors: { ...prev.errors, [name]: errors[name as string] },
+          errors: { ...prev.errors, [name]: errors[name as keyof typeof errors] },
         };
       });
     },
