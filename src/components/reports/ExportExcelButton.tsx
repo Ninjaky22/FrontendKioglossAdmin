@@ -11,6 +11,7 @@ import type {
   OrderStatusDistribution,
 } from '../../models/report.model';
 import logoUrl from '../../assets/logo.png';
+import { getOrderStatusLabel } from '../../utils/orderStatus';
 
 // ── Brand palette (ARGB: 'FF' + hex sin '#') ──────────────────────────────
 const C = {
@@ -23,19 +24,6 @@ const C = {
 } as const;
 
 const COP = '"$"#,##0.00';
-
-const STATUS_LABELS: Record<string, string> = {
-  COMPLETED:  'Completadas',
-  DELIVERED:  'Completadas',
-  PENDING:    'Pendientes',
-  PROCESSING: 'Procesando',
-  SHIPPED:    'Enviadas',
-  CANCELLED:  'Canceladas',
-  CANCELED:   'Canceladas',
-};
-
-const normStatus = (s: string) =>
-  s.normalize('NFD').replace(/\p{Diacritic}/gu, '').trim().toUpperCase().replace(/\s+/g, '_');
 
 const BORDER: Partial<Borders> = {
   top:    { style: 'thin', color: { argb: C.border } },
@@ -248,7 +236,7 @@ export default function ExportExcelButton({
 
       const totalCount = orderStatusDistribution.reduce((acc, item) => acc + item.count, 0);
       orderStatusDistribution.forEach((item, i) => {
-        const label = STATUS_LABELS[normStatus(item.status)] ?? item.status;
+        const label = getOrderStatusLabel(item.status);
         const row = ws4.addRow({
           status: label, count: item.count, pct: item.percentage / 100,
         });

@@ -123,7 +123,7 @@ export const navigationCustomizations: Components<Theme> = {
       underline: 'none',
     },
     styleOverrides: {
-      root: ({ theme }) => ({
+      root: () => ({
         color: brand[500],
         fontWeight: 700,
         position: 'relative',

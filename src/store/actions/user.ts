@@ -39,6 +39,8 @@ const obtenerUsers = (page: number = 0, pageSize: number = 10, search?: string) 
         const params = new URLSearchParams({
             page: String(page),
             page_size: String(pageSize),
+            sortBy: 'id',
+            sortDir: 'DESC',
         });
         if (search) params.append('search', search);
         const { data } = await httpClient.get(usersUrl, { params });

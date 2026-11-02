@@ -1,6 +1,5 @@
 export const loginUrl = '/login'
 export const refreshTokenUrl = '/refresh'
-export const signUpUrl = '/user/'
 export const usuarioIniciadoUrl = '/user'
 export const productsUrl = '/admin/products'
 export const productImagesUrl = '/admin/products/images'

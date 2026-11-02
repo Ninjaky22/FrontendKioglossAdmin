@@ -134,7 +134,8 @@ const exitoAlCrearProducto = (
         ...state,
         listaProductos: state.listaProductos ? {
             ...state.listaProductos,
-            content: [...state.listaProductos.content, payload],
+            // la lista viene ordenada de más reciente a más antiguo: el nuevo va primero
+            content: [payload, ...state.listaProductos.content],
             totalElements: state.listaProductos.totalElements + 1,
         } : null,
         productoActual: payload,

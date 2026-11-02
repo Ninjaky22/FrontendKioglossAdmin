@@ -6,6 +6,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { useNavigate, useParams } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import useNotifications from '../hooks/useNotifications/useNotifications';
@@ -13,6 +14,7 @@ import { extractErrorMessage } from '../utils/errorUtils';
 import { AccionesOrder } from '../store/actions/order';
 import { orderActualSelector, obtenerOrderEnProgresoSelector, actualizarEstadoOrderEnProgresoSelector } from '../store/selectors/order';
 import PageContainer from './PageContainer';
+import { ORDER_STATUS_LABELS, toOrderStatusCode } from '../utils/orderStatus';
 
 export default function OrderShow() {
   const { orderId } = useParams();
@@ -31,10 +33,12 @@ export default function OrderShow() {
     return () => { dispatch(AccionesOrder.limpiarOrderActual()); };
   }, [dispatch, orderId]);
 
-  React.useEffect(() => { if (order) setStatus(order.status); }, [order]);
+  // La API responde con la descripción ("Pendiente"); el selector trabaja con el código ("PENDING")
+  const currentStatus = toOrderStatusCode(order?.status) ?? '';
+  React.useEffect(() => { if (order) setStatus(toOrderStatusCode(order.status) ?? ''); }, [order]);
 
   const handleStatusChange = async () => {
-    if (!orderId || !status || status === order?.status) return;
+    if (!orderId || !status || status === currentStatus) return;
     try {
       await dispatch(AccionesOrder.actualizarEstadoOrder(Number(orderId), status));
       notifications.show('Estado de la orden actualizado exitosamente.', { severity: 'success' });
@@ -82,6 +86,17 @@ export default function OrderShow() {
             <Divider sx={{ mb: 2 }} />
             <Typography variant="subtitle2">{order.customer?.name}</Typography>
             <Typography variant="body2" color="text.secondary">{order.customer?.email}</Typography>
+            {order.phoneNumber ? (
+              <Typography variant="body2" color="text.secondary">{order.phoneNumber}</Typography>
+            ) : null}
+            <Divider sx={{ my: 2 }} />
+            <Typography variant="subtitle2" gutterBottom>Dirección de entrega</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+              <LocationOnIcon fontSize="small" sx={{ color: 'primary.main', mt: 0.25 }} />
+              <Typography variant="body2" color={order.shippingAddress ? 'text.primary' : 'text.secondary'}>
+                {order.shippingAddress || 'Sin dirección registrada'}
+              </Typography>
+            </Box>
           </Paper>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6" gutterBottom>Estado</Typography>
@@ -95,23 +110,23 @@ export default function OrderShow() {
               </Typography>
               <Select value={status} onChange={(e) => setStatus(e.target.value)} displayEmpty>
                 <MenuItem value="PENDING" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <TimerIcon fontSize="small" sx={{ color: 'warning.main' }} /> PENDIENTES
+                  <TimerIcon fontSize="small" sx={{ color: 'warning.main' }} /> {ORDER_STATUS_LABELS.PENDING}
                 </MenuItem>
                 <MenuItem value="PROCESSING" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <SettingsIcon fontSize="small" sx={{ color: 'primary.main' }} /> PROCESANDO
+                  <SettingsIcon fontSize="small" sx={{ color: 'primary.main' }} /> {ORDER_STATUS_LABELS.PROCESSING}
                 </MenuItem>
                 <MenuItem value="SHIPPED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <LocalShippingIcon fontSize="small" sx={{ color: 'info.main' }} /> ENVIADO
+                  <LocalShippingIcon fontSize="small" sx={{ color: 'info.main' }} /> {ORDER_STATUS_LABELS.SHIPPED}
                 </MenuItem>
                 <MenuItem value="DELIVERED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CheckCircleIcon fontSize="small" sx={{ color: 'success.main' }} /> ENTREGADO
+                  <CheckCircleIcon fontSize="small" sx={{ color: 'success.main' }} /> {ORDER_STATUS_LABELS.DELIVERED}
                 </MenuItem>
                 <MenuItem value="CANCELLED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CancelIcon fontSize="small" sx={{ color: 'error.main' }} /> CANCELADO
+                  <CancelIcon fontSize="small" sx={{ color: 'error.main' }} /> {ORDER_STATUS_LABELS.CANCELLED}
                 </MenuItem>
               </Select>
             </FormControl>
-            <Button variant="contained" fullWidth onClick={handleStatusChange} disabled={isUpdating || status === order.status}>
+            <Button variant="contained" fullWidth onClick={handleStatusChange} disabled={isUpdating || status === currentStatus}>
               Actualizar
             </Button>
           </Paper>

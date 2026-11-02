@@ -40,40 +40,9 @@ import {
 } from '../store/selectors/order';
 import PageContainer from './PageContainer';
 import type { OrderSummaryDTO, CustomerBasicDTO } from '../models/Order';
+import { ORDER_STATUS_LABELS, toOrderStatusCode } from '../utils/orderStatus';
 
 const INITIAL_PAGE_SIZE = 10;
-
-// Definimos los estados válidos para evitar errores de referencia
-type CanonicalStatus = 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
-
-const STATUS_VARIANTS: Record<string, { canonical: CanonicalStatus; label?: string }> = {
-  PENDING: { canonical: 'PENDING' },
-  PENDIENTE: { canonical: 'PENDING', label: 'Pendiente' },
-  PENDIENTES: { canonical: 'PENDING', label: 'Pendientes' },
-  PROCESSING: { canonical: 'PROCESSING' },
-  PROCESANDO: { canonical: 'PROCESSING', label: 'Procesando' },
-  EN_PROCESO: { canonical: 'PROCESSING', label: 'En Proceso' },
-  EN_PREPARACION: { canonical: 'PROCESSING', label: 'En Preparacion' },
-  SHIPPED: { canonical: 'SHIPPED' },
-  ENVIADO: { canonical: 'SHIPPED', label: 'Enviado' },
-  ENVIADOS: { canonical: 'SHIPPED', label: 'Enviados' },
-  DELIVERED: { canonical: 'DELIVERED' },
-  ENTREGADO: { canonical: 'DELIVERED', label: 'Entregado' },
-  ENTREGADOS: { canonical: 'DELIVERED', label: 'Entregados' },
-  CANCELLED: { canonical: 'CANCELLED' },
-  CANCELADO: { canonical: 'CANCELLED', label: 'Cancelado' },
-  CANCELADOS: { canonical: 'CANCELLED', label: 'Cancelados' },
-};
-
-const normalizeStatus = (status: string) =>
-  status
-    ? status
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .trim()
-        .toUpperCase()
-        .replace(/\s+/g, '_')
-    : '';
 
 type OrderRow = OrderSummaryDTO & {
   user?: {
@@ -109,31 +78,31 @@ export default function OrderList() {
   const statusConfig = React.useMemo(
     () => ({
       PENDING: {
-        label: 'Pendiente',
+        label: ORDER_STATUS_LABELS.PENDING,
         color: theme.palette.warning.main,
         bg: alpha(theme.palette.warning.main, isDark ? 0.22 : 0.12),
         icon: <TimerIcon />,
       },
       PROCESSING: {
-        label: 'Procesando',
+        label: ORDER_STATUS_LABELS.PROCESSING,
         color: theme.palette.primary.main,
         bg: alpha(theme.palette.primary.main, isDark ? 0.22 : 0.12),
         icon: <SettingsIcon />,
       },
       SHIPPED: {
-        label: 'Enviado',
+        label: ORDER_STATUS_LABELS.SHIPPED,
         color: theme.palette.info.main,
         bg: alpha(theme.palette.info.main, isDark ? 0.22 : 0.12),
         icon: <LocalShippingIcon />,
       },
       DELIVERED: {
-        label: 'Entregado',
+        label: ORDER_STATUS_LABELS.DELIVERED,
         color: theme.palette.success.main,
         bg: alpha(theme.palette.success.main, isDark ? 0.22 : 0.12),
         icon: <CheckCircleIcon />,
       },
       CANCELLED: {
-        label: 'Cancelado',
+        label: ORDER_STATUS_LABELS.CANCELLED,
         color: theme.palette.error.main,
         bg: alpha(theme.palette.error.main, isDark ? 0.22 : 0.12),
         icon: <CancelIcon />,
@@ -176,14 +145,8 @@ export default function OrderList() {
 
   const getStatusConfig = React.useCallback(
     (status: string) => {
-      const normalizedStatus = normalizeStatus(status);
-      const variant = STATUS_VARIANTS[normalizedStatus];
-      const canonicalKey = variant?.canonical ?? (normalizedStatus as CanonicalStatus);
-      const baseConfig = statusConfig[canonicalKey];
-
-      if (baseConfig) {
-        return { ...baseConfig, label: variant?.label ?? baseConfig.label };
-      }
+      const code = toOrderStatusCode(status);
+      if (code) return statusConfig[code];
 
       return {
         label: status,
@@ -413,19 +376,19 @@ export default function OrderList() {
                   <InventoryIcon fontSize="small" sx={{ color: theme.palette.primary.main }} /> Todos los pedidos
                 </MenuItem>
                 <MenuItem value="PENDING" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <TimerIcon fontSize="small" sx={{ color: theme.palette.warning.main }} /> Pendientes
+                  <TimerIcon fontSize="small" sx={{ color: theme.palette.warning.main }} /> {ORDER_STATUS_LABELS.PENDING}
                 </MenuItem>
                 <MenuItem value="PROCESSING" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <SettingsIcon fontSize="small" sx={{ color: theme.palette.primary.main }} /> En Proceso
+                  <SettingsIcon fontSize="small" sx={{ color: theme.palette.primary.main }} /> {ORDER_STATUS_LABELS.PROCESSING}
                 </MenuItem>
                 <MenuItem value="SHIPPED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <LocalShippingIcon fontSize="small" sx={{ color: theme.palette.info.main }} /> Enviados
+                  <LocalShippingIcon fontSize="small" sx={{ color: theme.palette.info.main }} /> {ORDER_STATUS_LABELS.SHIPPED}
                 </MenuItem>
                 <MenuItem value="DELIVERED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CheckCircleIcon fontSize="small" sx={{ color: theme.palette.success.main }} /> Entregados
+                  <CheckCircleIcon fontSize="small" sx={{ color: theme.palette.success.main }} /> {ORDER_STATUS_LABELS.DELIVERED}
                 </MenuItem>
                 <MenuItem value="CANCELLED" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CancelIcon fontSize="small" sx={{ color: theme.palette.error.main }} /> Cancelados
+                  <CancelIcon fontSize="small" sx={{ color: theme.palette.error.main }} /> {ORDER_STATUS_LABELS.CANCELLED}
                 </MenuItem>
               </Select>
             </FormControl>

@@ -27,16 +27,60 @@ const errorObtenerUsuarioIniciado = createAction<Error>(TipoAccionesSesion.ERROR
 const refreshTokenExitoso = createAction<any>(TipoAccionesSesion.REFRESH_TOKEN_EXITOSO)
 const errorRefreshToken = createAction<Error>(TipoAccionesSesion.ERROR_REFRESH_TOKEN)
 
+export const MENSAJE_SIN_PERMISOS_ADMIN = 'No tienes los permisos necesarios para ingresar'
+
+const ROLES_ADMIN = ['admin', 'administrador']
+
+// Devuelve true/false si el perfil permite determinar el rol, o null si no trae información de rol
+const esAdministrador = (perfil: any): boolean | null => {
+    if (!perfil) return null
+    if (typeof perfil.isSuperuser === 'boolean' && perfil.isSuperuser) return true
+
+    const roles = [
+        perfil.role, perfil.Role, perfil.rol, perfil.roles, perfil.authorities,
+        perfil['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'],
+    ]
+        .flat()
+        .filter((r) => r != null)
+        .map((r: any) => String(typeof r === 'object' ? r.authority ?? r.name ?? '' : r)
+            .toLowerCase().replace(/^role_/, ''))
+
+    if (roles.some((r) => ROLES_ADMIN.includes(r))) return true
+    if (roles.length > 0 || typeof perfil.isSuperuser === 'boolean') return false
+    return null
+}
+
 //Function THUNK -> es una funcion que permite acceder al dispacher
 export const loginUser = (userData: any) => async (dispatch: Dispatch) => {
     dispatch(restablecerEstado())
     dispatch(cambiarEstadoDeCarga(true)) // en este momento hay una carga en progreso
+    // Se limpia cualquier sesión previa para que el interceptor no adjunte un token anterior
+    removeToken()
+    removeRefreshToken()
     try {
         const { data: response } = await httpClient.post(loginUrl, userData, false, false)
         // se agrega el parametro adicional strict en false ya que no queremos redirigir al usuario en caso de que el login este mal
 
-        // Decodificar y guardar access token
-        const decodedAccessToken = decodeToken(response.access)
+        // El JWT no incluye roles: se consulta el perfil del usuario para validar que sea administrador
+        const decodedAccessToken: any = decodeToken(response.access)
+        const { data: perfil } = await httpClient.get(
+            `${usuarioIniciadoUrl}/${decodedAccessToken?.user_id}`,
+            { headers: { Authorization: `Bearer ${response.access}` } },
+            false
+        )
+        const admin = esAdministrador(perfil)
+        if (admin !== true) {
+            removeToken()
+            removeRefreshToken()
+            // Solo se informa falta de permisos cuando el rol se pudo verificar como cliente/usuario
+            if (admin === null) console.error('El perfil no contiene información de rol:', perfil)
+            const message = admin === false ? MENSAJE_SIN_PERMISOS_ADMIN : 'No se pudo verificar el rol del usuario'
+            dispatch(errorInicioSesion({ message } as Error))
+            dispatch(cambiarEstadoDeCarga(false))
+            return
+        }
+
+        // Guardar access token
         if (decodedAccessToken && decodedAccessToken.exp) {
             const accessExpiration = new Date(decodedAccessToken.exp * 1000) // JWT exp está en segundos
             setToken(response.access, accessExpiration)

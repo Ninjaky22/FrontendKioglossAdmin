@@ -58,7 +58,7 @@ export default function useReports(days: number, limit: number): UseReportsResul
       setSalesByDay(salesData);
       setTopProducts(topData);
       setOrderStatusDistribution(orderStatusData);
-    } catch (err) {
+    } catch {
       if (!isMountedRef.current) return;
       setError('No pudimos cargar los reportes. Intenta de nuevo.');
     } finally {

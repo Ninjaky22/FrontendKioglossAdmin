@@ -24,6 +24,7 @@ export interface OrderSummaryDTO {
     date: string;
     status: string;
     itemCount: number;
+    shippingAddress?: string;
     customer: CustomerBasicDTO;
 }
 
@@ -32,6 +33,8 @@ export interface OrderDetailDTO {
     amount: number;
     date: string;
     status: string;
+    shippingAddress?: string;
+    phoneNumber?: string;
     customer: CustomerBasicDTO;
     items: OrderItemDTO[];
 }

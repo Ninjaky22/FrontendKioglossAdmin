@@ -28,6 +28,7 @@ import {
   actualizarUserEnProgresoSelector 
 } from '../store/selectors/user';
 import PageContainer from './PageContainer';
+import { getOrderStatusLabel } from '../utils/orderStatus';
 
 export default function UserShow() {
   const { userId } = useParams();
@@ -70,7 +71,7 @@ export default function UserShow() {
         ));
 
         if (isActive) setOrdersByUser(filtered);
-      } catch (err) {
+      } catch {
         if (isActive) setOrdersByUser([]);
         notifications.show('Error al cargar pedidos del usuario', { severity: 'error' });
       } finally {
@@ -87,7 +88,7 @@ export default function UserShow() {
     try {
       await dispatch(AccionesUser.toggleUserStatus(Number(userId)));
       notifications.show('Estado de la cuenta actualizado', { severity: 'success' });
-    } catch (err) {
+    } catch {
       notifications.show('Error al cambiar el estado', { severity: 'error' });
     }
   };
@@ -101,7 +102,7 @@ export default function UserShow() {
         isSuperuser: isAdmin 
       }));
       notifications.show('Privilegios actualizados', { severity: 'success' });
-    } catch (err) {
+    } catch {
       notifications.show('Error al actualizar privilegios', { severity: 'error' });
     }
   };
@@ -146,7 +147,8 @@ export default function UserShow() {
       const dateB = b?.date ?? b?.createdAt ?? b?.created_at;
       const timeA = dateA ? new Date(dateA).getTime() : 0;
       const timeB = dateB ? new Date(dateB).getTime() : 0;
-      return timeB - timeA;
+      // Misma fecha (sin hora): el pedido con mayor id es el más reciente
+      return timeB - timeA || Number(b?.id ?? 0) - Number(a?.id ?? 0);
     });
     return orders.slice(0, 5);
   }, [ordersSource]);
@@ -269,7 +271,7 @@ export default function UserShow() {
                   const orderId = order?.id ?? order?.orderId ?? order?.order_id;
                   const orderDate = order?.date ?? order?.createdAt ?? order?.created_at;
                   const orderAmount = order?.amount ?? order?.total ?? order?.totalAmount ?? order?.total_amount ?? 0;
-                  const orderStatus = order?.status ?? order?.state ?? 'Pendiente';
+                  const orderStatus = getOrderStatusLabel(order?.status ?? order?.state ?? 'PENDING');
                   const canNavigate = Boolean(orderId);
 
                   return (

@@ -17,7 +17,6 @@ import {
   sidebarCustomizations,
   formInputCustomizations,
 } from './theme/customizations';
-import SignUp from './pages/SignUp';
 
 import ProductList from './components/ProductList';
 import ProductCreate from './components/ProductCreate';
@@ -66,10 +65,6 @@ const router = createHashRouter([
   {
     path: '/sign-in',
     Component: SignIn,
-  },
-    {
-    path: '/sign-up',
-    Component: SignUp,
   },
   {
     path: '/reset-password',

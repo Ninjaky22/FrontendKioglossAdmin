@@ -72,7 +72,7 @@ const getErrorDetails = (error: unknown) => {
   return { status: undefined, message: '' };
 };
 
-export default function ResetPasswordPage(props: { disableCustomTheme?: boolean }) {
+export default function ResetPasswordPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');

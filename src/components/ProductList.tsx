@@ -106,7 +106,7 @@ export default function ProductList() {
       align: 'center',
       headerAlign: 'center',
       renderCell: (params) => {
-        const imageUrl = params.row?.images?.[0]?.url || params.row?.imageUrl || '/placeholder-product.png';
+        const imageUrl = params.row?.images?.[0]?.url || params.row?.imageUrl || '/No_Image_Available.jpg';
         return (
           <Box
             component="img"
@@ -149,6 +149,20 @@ export default function ProductList() {
       align: 'center',
       headerAlign: 'center',
       renderCell: (params) => {
+        // Productos con variantes: el stock vive en cada variante, no en el producto
+        if ((params.row?.variants?.length ?? 0) > 0) {
+          return (
+            <Chip
+              label="Multi-Stock"
+              size="small"
+              sx={{
+                fontWeight: 700,
+                backgroundColor: accentSoft,
+                color: isDark ? theme.palette.common.white : theme.palette.primary.main,
+              }}
+            />
+          );
+        }
         const stockValue = Number(params.value) as number | null | undefined;
         const isMissing = stockValue === null || stockValue === undefined || stockValue <= 0;
         const isLow = !isMissing && stockValue <= 10;

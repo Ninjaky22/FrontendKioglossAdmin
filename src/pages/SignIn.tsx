@@ -2,7 +2,6 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
-import Divider from '@mui/material/Divider';
 import FormLabel from '@mui/material/FormLabel';
 import FormControl from '@mui/material/FormControl';
 import Link from '@mui/material/Link';
@@ -21,9 +20,9 @@ import Person from '@mui/icons-material/Person';
 import { styled } from '@mui/material/styles';
 import ForgotPassword from '../components/login/ForgotPassword';
 import ColorModeSelect from '../theme/ColorModeSelect';
-import { Link as RouterLink, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
-import { loginUser } from '../store/actions/session';
+import { loginUser, MENSAJE_SIN_PERMISOS_ADMIN } from '../store/actions/session';
 import { 
     sessionAuthenticationInProgressSelector,
     sessionAuthenticationErrorSelector,
@@ -103,6 +102,11 @@ export default function SignIn() {
 
   React.useEffect(() => {
     if (!error?.message) {
+      return;
+    }
+
+    if (error.message === MENSAJE_SIN_PERMISOS_ADMIN) {
+      showToast(MENSAJE_SIN_PERMISOS_ADMIN, 'warning');
       return;
     }
 
@@ -323,20 +327,6 @@ export default function SignIn() {
               >
                 ¿Olvidaste la contraseña?
               </Link>
-            </Box>
-            <Divider sx={{ my: 2 }}>O</Divider>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Typography sx={{ textAlign: 'center', color: 'text.secondary' }}>
-                ¿No tienes cuenta?{' '}
-                <Link
-                  component={RouterLink}
-                  to="/sign-up"
-                  variant="body2"
-                  sx={{ alignSelf: 'center' }}
-                >
-                  Regístrate
-                </Link>
-              </Typography>
             </Box>
           </Box>
         </Card>

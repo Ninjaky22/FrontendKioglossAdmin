@@ -49,6 +49,12 @@ export interface ProductFormProps {
   productImages?: ImageDTO[];
 }
 
+// Stock solo admite enteros >= 0: bloquea decimales, signos y notación científica
+const blockNonIntegerKeys = (e: React.KeyboardEvent) => {
+  if (['.', ',', 'e', 'E', '-', '+'].includes(e.key)) e.preventDefault();
+};
+const toStock = (raw: string) => Math.max(0, Math.trunc(Number(raw) || 0));
+
 // Sub-componente para gestionar Variantes como combinaciones (cada variante = 1 opción por cada tipo + stock + imagen)
 const VariantBuilder = React.memo(({ initialVariants, variantTypes, productImages = [], onChange }: { initialVariants: ProductVariantRequestDTO[], variantTypes: StoreVariantTypeDTO[], productImages?: ImageDTO[], onChange: (v: ProductVariantRequestDTO[]) => void }) => {
   const [variants, setVariants] = React.useState<ProductVariantRequestDTO[]>(initialVariants || []);
@@ -167,17 +173,6 @@ const VariantBuilder = React.memo(({ initialVariants, variantTypes, productImage
     onChange(newVariants);
   };
 
-  // Summary chip for a variant row
-  const getVariantLabel = (v: ProductVariantRequestDTO): string => {
-    if (!v.optionIds?.length) return 'Sin opciones';
-    return v.optionIds.map(id => {
-      for (const vt of variantTypes) {
-        const opt = vt.options.find(o => o.id === id);
-        if (opt) return opt.value;
-      }
-      return `#${id}`;
-    }).join(' / ');
-  };
 
   return (
     <Paper variant="outlined" sx={{ p: 2, width: '100%', overflowX: 'auto' }}>
@@ -234,7 +229,16 @@ const VariantBuilder = React.memo(({ initialVariants, variantTypes, productImage
                     );
                   })}
 
-                  <TextField label="Stock" type="number" size="small" value={v.stock} onChange={(e) => handleChange(idx, 'stock', Number(e.target.value))} sx={{ width: 100 }} />
+                  <TextField
+                    label="Stock"
+                    type="number"
+                    size="small"
+                    value={v.stock}
+                    onChange={(e) => handleChange(idx, 'stock', toStock(e.target.value))}
+                    onKeyDown={blockNonIntegerKeys}
+                    slotProps={{ htmlInput: { min: 0, step: 1 } }}
+                    sx={{ width: 100 }}
+                  />
                   <TextField label="SKU" size="small" value={v.sku} onChange={(e) => handleChange(idx, 'sku', e.target.value)} sx={{ flex: 1, minWidth: 140 }} />
                   <Autocomplete
                     size="small"
@@ -339,7 +343,7 @@ const TechnicalSpecs = React.memo(({ initialAttributes, onChange }: { initialAtt
 });
 
 // Sub-componente para campos de texto optimizados
-const OptimizedTextField = React.memo(({ label, name, value, onChange, error, helperText, type = 'text', fullWidth = true, required = false, slotProps }: any) => {
+const OptimizedTextField = React.memo(({ label, name, value, onChange, error, helperText, type = 'text', fullWidth = true, required = false, slotProps, onKeyDown }: any) => {
   const [localValue, setLocalValue] = React.useState(value ?? '');
 
   // Sincronizar valor local si el valor externo cambia (ej: por carga inicial o slug automático)
@@ -368,6 +372,7 @@ const OptimizedTextField = React.memo(({ label, name, value, onChange, error, he
       value={localValue}
       onChange={handleChange}
       onBlur={handleBlur}
+      onKeyDown={onKeyDown}
       error={error}
       helperText={helperText}
       type={type}
@@ -427,6 +432,10 @@ export default function ProductForm(props: ProductFormProps) {
 
   const handleNumberFieldChange = React.useCallback((event: any) => {
     onFieldChange(event.target.name as keyof ProductFormState['values'], Number(event.target.value));
+  }, [onFieldChange]);
+
+  const handleStockFieldChange = React.useCallback((event: any) => {
+    onFieldChange('stock', toStock(event.target.value));
   }, [onFieldChange]);
 
   const handleSelectFieldChange = React.useCallback((event: SelectChangeEvent) => {
@@ -523,8 +532,9 @@ export default function ProductForm(props: ProductFormProps) {
                   name="stock" 
                   type="number"
                   value={formValues.stock ?? 0} 
-                  onChange={handleNumberFieldChange} 
-                  slotProps={{htmlInput: { min: 0 }}}
+                  onChange={handleStockFieldChange}
+                  onKeyDown={blockNonIntegerKeys}
+                  slotProps={{htmlInput: { min: 0, step: 1 }}}
               />
             </Grid>
           )}
