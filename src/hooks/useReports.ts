@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type {
   OrderStatusDistribution,
+  PeriodDetail,
   ReportSummary,
   SalesByDay,
   TopProduct,
 } from '../models/report.model';
 import {
   getOrderStatusDistribution,
+  getPeriodDetail,
   getReportSummary,
   getSalesByDay,
   getTopProducts,
@@ -14,6 +16,7 @@ import {
 
 interface UseReportsResult {
   summary: ReportSummary | null;
+  detail: PeriodDetail | null;
   salesByDay: SalesByDay[];
   topProducts: TopProduct[];
   orderStatusDistribution: OrderStatusDistribution[];
@@ -24,6 +27,7 @@ interface UseReportsResult {
 
 export default function useReports(days: number, limit: number): UseReportsResult {
   const [summary, setSummary] = useState<ReportSummary | null>(null);
+  const [detail, setDetail] = useState<PeriodDetail | null>(null);
   const [salesByDay, setSalesByDay] = useState<SalesByDay[]>([]);
   const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
   const [orderStatusDistribution, setOrderStatusDistribution] = useState<
@@ -45,16 +49,18 @@ export default function useReports(days: number, limit: number): UseReportsResul
     setError(null);
 
     try {
-      const [summaryData, salesData, topData, orderStatusData] = await Promise.all([
+      const [summaryData, salesData, topData, orderStatusData, detailData] = await Promise.all([
         getReportSummary(),
         getSalesByDay(days),
-        getTopProducts(limit),
+        getTopProducts(limit, days),
         getOrderStatusDistribution(),
+        getPeriodDetail(days),
       ]);
 
       if (!isMountedRef.current) return;
 
       setSummary(summaryData);
+      setDetail(detailData);
       setSalesByDay(salesData);
       setTopProducts(topData);
       setOrderStatusDistribution(orderStatusData);
@@ -74,6 +80,7 @@ export default function useReports(days: number, limit: number): UseReportsResul
 
   return {
     summary,
+    detail,
     salesByDay,
     topProducts,
     orderStatusDistribution,

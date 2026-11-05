@@ -11,6 +11,13 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import Inventory2Icon from '@mui/icons-material/Inventory2';
 import TodayIcon from '@mui/icons-material/Today';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import PeopleIcon from '@mui/icons-material/People';
+import {
+  StatusBreakdownTable,
+  TopCustomersTable,
+  TopProductsTable,
+} from '../components/reports/ReportTables';
 import KpiCard from '../components/reports/KpiCard';
 import SalesLineChart from '../components/reports/SalesLineChart';
 import TopProductsChart from '../components/reports/TopProductsChart';
@@ -29,7 +36,7 @@ const dateFormatter = new Intl.DateTimeFormat('es-CO', {
   year: 'numeric',
 });
 
-const dayOptions = [7, 14, 30];
+const dayOptions = [7, 14, 30, 90];
 const limitOptions = [5, 10];
 
 const filterButtonSx = (isActive: boolean) => ({
@@ -51,6 +58,18 @@ const filterButtonSx = (isActive: boolean) => ({
   },
 });
 
+const paperSx = {
+  p: { xs: 2, sm: 3 },
+  borderRadius: 3,
+  boxShadow: '0 16px 30px rgba(17, 24, 39, 0.08)',
+};
+
+const kpiGridSx = {
+  display: 'grid',
+  gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' },
+  gap: 2.5,
+};
+
 const chartSkeletonSx = {
   borderRadius: 3,
   width: '100%',
@@ -63,6 +82,7 @@ export default function ReportsPage() {
 
   const {
     summary,
+    detail,
     salesByDay,
     topProducts,
     orderStatusDistribution,
@@ -77,6 +97,8 @@ export default function ReportsPage() {
     <Box
       sx={{
         width: '100%',
+        maxWidth: 1440,
+        mx: 'auto',
         fontFamily: "'Winky Sans', sans-serif",
         px: { xs: 2, md: 4 },
         py: { xs: 2, md: 3 },
@@ -105,25 +127,45 @@ export default function ReportsPage() {
         }}
       />
       <Stack spacing={3}>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: 2,
-          }}
-        >
-          <Typography variant="h4" sx={{ fontWeight: 700 }}>
-            📊 Reportes y Estadísticas
+        <Box sx={{ textAlign: 'center', pt: 1 }}>
+          <Typography
+            component="h1"
+            sx={{ fontWeight: 800, fontSize: { xs: '1.8rem', md: '2.4rem' }, color: 'var(--color-accent)' }}
+          >
+             Reportes y Estadísticas
           </Typography>
-          <ExportExcelButton
-            summary={summary}
-            salesByDay={salesByDay}
-            topProducts={topProducts}
-            orderStatusDistribution={orderStatusDistribution}
-            days={days}
-          />
+          <Typography color="text.secondary" sx={{ fontSize: { xs: '0.95rem', md: '1.1rem' }, mt: 0.5 }}>
+            {detail
+              ? `Del ${dateFormatter.format(new Date(`${detail.startDate}T00:00:00`))} al ${dateFormatter.format(new Date(`${detail.endDate}T00:00:00`))}`
+              : 'Resumen del rendimiento de la tienda'}
+          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 1.5,
+              mt: 2.5,
+            }}
+          >
+            {dayOptions.map((option) => (
+              <Button
+                key={`days-${option}`}
+                onClick={() => setDays(option)}
+                sx={filterButtonSx(days === option)}
+              >
+                Últimos {option} días
+              </Button>
+            ))}
+            <ExportExcelButton
+              summary={summary}
+              salesByDay={salesByDay}
+              topProducts={topProducts}
+              orderStatusDistribution={orderStatusDistribution}
+              days={days}
+            />
+          </Box>
         </Box>
 
         {error ? (
@@ -145,19 +187,13 @@ export default function ReportsPage() {
           </Alert>
         ) : null}
 
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: 2,
-          }}
-        >
+        <Box sx={kpiGridSx}>
           {loading ? (
             Array.from({ length: 4 }).map((_, index) => (
               <Skeleton
                 key={`kpi-skeleton-${index}`}
                 variant="rounded"
-                height={120}
+                height={168}
                 sx={{ borderRadius: 3 }}
               />
             ))
@@ -188,35 +224,59 @@ export default function ReportsPage() {
           ) : null}
         </Box>
 
-        <Paper
-          elevation={0}
-          sx={{
-            p: { xs: 2, sm: 3 },
-            borderRadius: 3,
-            boxShadow: '0 16px 30px rgba(17, 24, 39, 0.08)',
-          }}
-        >
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            alignItems={{ xs: 'flex-start', sm: 'center' }}
-            justifyContent="space-between"
-            spacing={2}
-          >
-            <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              Ventas por día
-            </Typography>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-              {dayOptions.map((option) => (
-                <Button
-                  key={`days-${option}`}
-                  onClick={() => setDays(option)}
-                  sx={filterButtonSx(days === option)}
-                >
-                  {option}d
-                </Button>
-              ))}
-            </Box>
-          </Stack>
+        <Typography variant="h6" sx={{ fontWeight: 700, textAlign: 'center', pt: 1 }}>
+          Detalle del periodo ({days} días)
+        </Typography>
+        <Box sx={kpiGridSx}>
+          {loading ? (
+            Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton
+                key={`detail-skeleton-${index}`}
+                variant="rounded"
+                height={168}
+                sx={{ borderRadius: 3 }}
+              />
+            ))
+          ) : detail ? (
+            <>
+              <KpiCard
+                title="Ingresos netos"
+                value={currencyFormatter.format(detail.netRevenue)}
+                trend={detail.revenueTrend ?? undefined}
+                subtitle={`Bruto: ${currencyFormatter.format(detail.grossRevenue)}`}
+                icon={<AttachMoneyIcon />}
+              />
+              <KpiCard
+                title="Pedidos"
+                value={detail.totalOrders}
+                trend={detail.ordersTrend ?? undefined}
+                subtitle={`${detail.cancelledOrders} cancelados (${detail.cancellationRate}%)`}
+                icon={<ShoppingCartIcon />}
+              />
+              <KpiCard
+                title="Ticket promedio"
+                value={currencyFormatter.format(detail.averageTicket)}
+                subtitle={`${detail.unitsSold} unidades vendidas`}
+                icon={<ReceiptLongIcon />}
+              />
+              <KpiCard
+                title="Clientes activos"
+                value={detail.uniqueCustomers}
+                subtitle={
+                  detail.bestDay
+                    ? `Mejor día: ${dateFormatter.format(new Date(`${detail.bestDay.date}T00:00:00`))} (${currencyFormatter.format(detail.bestDay.totalAmount)})`
+                    : 'Sin ventas en el periodo'
+                }
+                icon={<PeopleIcon />}
+              />
+            </>
+          ) : null}
+        </Box>
+
+        <Paper elevation={0} sx={paperSx}>
+          <Typography variant="h6" sx={{ fontWeight: 700, textAlign: 'center' }}>
+            Ventas por día
+          </Typography>
           <Box sx={{ mt: 2 }}>
             {loading ? (
               <Skeleton variant="rounded" sx={chartSkeletonSx} />
@@ -239,13 +299,9 @@ export default function ReportsPage() {
         >
           <Paper
             elevation={0}
-            sx={{
-              p: { xs: 2, sm: 3 },
-              borderRadius: 3,
-              boxShadow: '0 16px 30px rgba(17, 24, 39, 0.08)',
-            }}
+            sx={paperSx}
           >
-            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, textAlign: 'center' }}>
               Órdenes por estado
             </Typography>
             <Box sx={{ mt: 2 }}>
@@ -263,11 +319,7 @@ export default function ReportsPage() {
 
           <Paper
             elevation={0}
-            sx={{
-              p: { xs: 2, sm: 3 },
-              borderRadius: 3,
-              boxShadow: '0 16px 30px rgba(17, 24, 39, 0.08)',
-            }}
+            sx={paperSx}
           >
             <Stack
               direction={{ xs: 'column', sm: 'row' }}
@@ -303,6 +355,27 @@ export default function ReportsPage() {
             </Box>
           </Paper>
         </Box>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 2 }}>
+          <Paper elevation={0} sx={paperSx}>
+            <Typography variant="h6" sx={{ fontWeight: 700, textAlign: 'center', mb: 1 }}>
+              Desglose por estado de pedido
+            </Typography>
+            {loading ? <Skeleton variant="rounded" height={220} /> : <StatusBreakdownTable data={detail?.statusBreakdown ?? []} />}
+          </Paper>
+          <Paper elevation={0} sx={paperSx}>
+            <Typography variant="h6" sx={{ fontWeight: 700, textAlign: 'center', mb: 1 }}>
+              Mejores clientes
+            </Typography>
+            {loading ? <Skeleton variant="rounded" height={220} /> : <TopCustomersTable data={detail?.topCustomers ?? []} />}
+          </Paper>
+        </Box>
+
+        <Paper elevation={0} sx={paperSx}>
+          <Typography variant="h6" sx={{ fontWeight: 700, textAlign: 'center', mb: 1 }}>
+            Productos más vendidos (últimos {days} días)
+          </Typography>
+          {loading ? <Skeleton variant="rounded" height={220} /> : <TopProductsTable data={topProducts} />}
+        </Paper>
       </Stack>
     </Box>
   );

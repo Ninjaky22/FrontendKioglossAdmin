@@ -38,8 +38,8 @@ export default function KpiCard({
         borderRadius: 3,
         border: '1px solid',
         borderColor: theme.palette.divider,
-        borderLeft: '4px solid',
-        borderLeftColor: accentColor,
+        borderTop: '4px solid',
+        borderTopColor: accentColor,
         boxShadow: isDark
           ? '0 14px 26px rgba(0, 0, 0, 0.35)'
           : '0 8px 18px -12px rgba(97, 3, 97, 0.35)',
@@ -51,84 +51,83 @@ export default function KpiCard({
     >
       <CardContent
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 2,
-          p: 2.5,
-          '&:last-child': { p: 2.5 },
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          textAlign: "center",
+          gap: 1,
+          minHeight: 168,
+          p: 3,
+          "&:last-child": { p: 3 },
         }}
       >
-        <Box sx={{ minWidth: 0 }}>
-          <Typography
-            variant="overline"
-            sx={{
-              color: 'text.secondary',
-              letterSpacing: 0.6,
-              fontWeight: 600,
-              fontFamily: "'Winky Sans', sans-serif",
-            }}
-          >
-            {title}
-          </Typography>
-          <Typography
-            variant="h4"
-            sx={{
-              fontWeight: 700,
-              color: 'var(--color-accent)',
-              fontFamily: "'Winky Sans', sans-serif",
-            }}
-          >
-            {value}
-          </Typography>
-          {showTrend ? (
-            <Typography
-              variant="caption"
-              sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 0.5,
-                color: trendIsPositive
-                  ? theme.palette.success.main
-                  : theme.palette.error.main,
-                fontWeight: 600,
-                fontFamily: "'Winky Sans', sans-serif",
-              }}
-            >
-              <span>{trendIsPositive ? '↑' : '↓'}</span>
-              <span>
-                {trendIsPositive ? '+' : ''}
-                {formatTrend(trend ?? 0)}%
-              </span>
-            </Typography>
-          ) : null}
-          {subtitle ? (
-            <Typography
-              variant="body2"
-              sx={{
-                color: 'text.secondary',
-                fontFamily: "'Winky Sans', sans-serif",
-              }}
-            >
-              {subtitle}
-            </Typography>
-          ) : null}
-        </Box>
         {icon ? (
           <Box
             sx={{
-              height: 44,
-              width: 44,
-              borderRadius: '50%',
-              display: 'grid',
-              placeItems: 'center',
+              height: 52,
+              width: 52,
+              borderRadius: "50%",
+              display: "grid",
+              placeItems: "center",
               color: accentColor,
               backgroundColor: alpha(theme.palette.primary.main, isDark ? 0.2 : 0.12),
-              flexShrink: 0,
+              "& svg": { fontSize: 28 },
             }}
           >
             {icon}
           </Box>
+        ) : null}
+        <Typography
+          variant="overline"
+          sx={{
+            color: "text.secondary",
+            letterSpacing: 1,
+            fontWeight: 700,
+            lineHeight: 1.4,
+            fontFamily: "'Winky Sans', sans-serif",
+          }}
+        >
+          {title}
+        </Typography>
+        <Typography
+          sx={{
+            fontWeight: 800,
+            fontSize: { xs: "1.7rem", md: "2.1rem" },
+            lineHeight: 1.1,
+            color: "var(--color-accent)",
+            fontFamily: "'Winky Sans', sans-serif",
+            wordBreak: "break-word",
+          }}
+        >
+          {value}
+        </Typography>
+        {showTrend ? (
+          <Typography
+            variant="body2"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 0.5,
+              color: trendIsPositive ? theme.palette.success.main : theme.palette.error.main,
+              fontWeight: 700,
+              fontFamily: "'Winky Sans', sans-serif",
+            }}
+          >
+            <span>{trendIsPositive ? "↑" : "↓"}</span>
+            <span>
+              {trendIsPositive ? "+" : ""}
+              {formatTrend(trend ?? 0)}% vs. periodo anterior
+            </span>
+          </Typography>
+        ) : null}
+        {subtitle ? (
+          <Typography
+            variant="body2"
+            sx={{ color: "text.secondary", fontFamily: "'Winky Sans', sans-serif" }}
+          >
+            {subtitle}
+          </Typography>
         ) : null}
       </CardContent>
     </Card>
